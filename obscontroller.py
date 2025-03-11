@@ -21,6 +21,11 @@ class OBSRecordingController:
         except Exception as e:
             self.logger.error(f"ERROR: Connection failed, {e}")
     
+    async def disconnect(self):
+        if self.ws:
+            await self.ws.disconnect()
+            self.logger.info('Disconnected from OBS WebSocket')
+    
     async def establish_connection(self):
         if not self.ws:
             self.logger.error('ERROR: Not connected to OBS. Attempting to reconnect...')

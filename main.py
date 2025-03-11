@@ -64,7 +64,7 @@ async def main():
         password=config['password']
     )
     await obs_controller.connect()
-    await obs_controller.ws.disconnect()
+    
     
     
     logger.info('Ended')
