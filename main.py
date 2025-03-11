@@ -4,7 +4,7 @@ import logging
 import yaml
 import simpleobsws
 import vosk
-import obscontroller
+from obscontroller import OBSRecordingController
 
 def set_config_values():
     user_config = {
@@ -58,7 +58,7 @@ async def main():
     logging.basicConfig(filename='clip_assistant.log', level=logging.INFO)
     logger.info('Started')
     config = load_config()
-    obs_controller = obscontroller.OBSRecordingController(
+    obs_controller = OBSRecordingController(
         host=config['host'],
         port=config['port'],
         password=config['password']

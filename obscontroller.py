@@ -1,5 +1,5 @@
 import logging
-import simpleobsws
+from simpleobsws import WebSocketClient, Request
 
 class OBSRecordingController:
     def __init__(self, host, port, password):
@@ -11,7 +11,7 @@ class OBSRecordingController:
         
     async def connect(self):
         try:
-            self.ws = simpleobsws.WebSocketClient(
+            self.ws = WebSocketClient(
                 url=f'ws://{self.host}:{self.port}',
                 password=self.password
             )
@@ -35,7 +35,7 @@ class OBSRecordingController:
         await self.establish_connection()
         
         try:
-            rec_request = simpleobsws.Request('GetRecordStatus')
+            rec_request = Request('GetRecordStatus')
             rec_response = await self.ws.call(rec_request)
             
             if not rec_response.ok():
@@ -43,7 +43,7 @@ class OBSRecordingController:
                 return
 
             if not rec_response.responseData['outputActive']:
-                start_rec_req = simpleobsws.Request('StartRecord')
+                start_rec_req = Request('StartRecord')
                 start_rec_res = await self.ws.call(start_rec_req)
                 
                 if start_rec_res.ok():
@@ -59,7 +59,7 @@ class OBSRecordingController:
         await self.establish_connection()
         
         try:
-            rec_request = simpleobsws.Request('GetRecordStatus')
+            rec_request = Request('GetRecordStatus')
             rec_response = await self.ws.call(rec_request)
             
             if not rec_response.ok():
@@ -67,7 +67,7 @@ class OBSRecordingController:
                 return
             
             if not rec_response.responseData['outputActive']:
-                stop_rec_req = simpleobsws.Request('StopRecord')
+                stop_rec_req = Request('StopRecord')
                 stop_rec_res = await self.ws.call(stop_rec_req)
                 
                 if stop_rec_res.ok():
