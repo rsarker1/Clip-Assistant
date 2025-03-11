@@ -1,8 +1,7 @@
 import logging
-import asyncio
 import simpleobsws
 
-class OBSController:
+class OBSRecordingController:
     def __init__(self, host, port, password):
         self.host = host
         self.port = port
@@ -19,15 +18,16 @@ class OBSController:
             await self.ws.connect()
             await self.ws.wait_until_identified()
             self.logger.info('Connected to OBS WebSocket successfully')
-            return True
         except Exception as e:
             self.logger.error(f"ERROR: Connection failed, {e}")
-            return False
     
-    async def start_recording(self):
+    async def establish_connection(self):
         if not self.ws:
             self.logger.error('ERROR: Not connected to OBS. Attempting to reconnect...')
             await self.connect()
+    
+    async def start_recording(self):
+        await self.establish_connection()
         
         try:
             rec_request = simpleobsws.Request('GetRecordStatus')
@@ -50,4 +50,28 @@ class OBSController:
         except Exception as e:
             self.logger.error(f"ERROR: Failed to start recording, {e}")
             
+    async def stop_recording(self):
+        await self.establish_connection()
+        
+        try:
+            rec_request = simpleobsws.Request('GetRecordStatus')
+            rec_response = await self.ws.call(rec_request)
+            
+            if not rec_response.ok():
+                self.logger.error('ERROR: Failed to get recording status')
+                return
+            
+            if not rec_response.responseData['outputActive']:
+                stop_rec_req = simpleobsws.Request('StopRecord')
+                stop_rec_res = await self.ws.call(stop_rec_req)
+                
+                if stop_rec_res.ok():
+                    self.logger.info('Recording stopped sucessfully')
+                else:
+                    self.logger.error(f"ERROR: Failed to stop recording, {e}")
+            else:
+                self.logger.info('No active recording')
+            
+        except Exception as e:
+            self.logger.error(f"ERROR: Failed to stop recording, {e}")
             

@@ -4,6 +4,7 @@ import logging
 import yaml
 import simpleobsws
 import vosk
+import obscontroller
 
 def set_config_values():
     user_config = {
@@ -37,7 +38,6 @@ def prompt_user(text, default_value=None):
         user_def = default_value
     return user_def
 
-
 def load_config(file_name='config.yaml'):
     print('Checking if config file exists...')
     if os.path.exists(file_name):
@@ -49,17 +49,24 @@ def load_config(file_name='config.yaml'):
         config = set_config_values()
         with open(file_name, 'w') as file:
             yaml.dump(config, file, default_flow_style=False)
+            
     print('Config loaded')
-    
-    
-    
-    return
+    return config
 
-def main():
+async def main():
     logger = logging.getLogger(__name__)
     logging.basicConfig(filename='clip_assistant.log', level=logging.INFO)
     logger.info('Started')
-    load_config()
+    config = load_config()
+    obs_controller = obscontroller.OBSRecordingController(
+        host=config['host'],
+        port=config['port'],
+        password=config['password']
+    )
+    await obs_controller.connect()
+    await obs_controller.ws.disconnect()
+    
+    
     logger.info('Ended')
     
-main()
+asyncio.run(main())
