@@ -1,5 +1,6 @@
 import os
 import asyncio
+import logging
 import yaml
 import simpleobsws
 import vosk
@@ -55,9 +56,10 @@ def load_config(file_name='config.yaml'):
     return
 
 def main():
+    logger = logging.getLogger(__name__)
+    logging.basicConfig(filename='clip_assistant.log', level=logging.INFO)
+    logger.info('Started')
     load_config()
+    logger.info('Ended')
     
-
 main()
-
-# Generate config.yaml if it doesn't exist
