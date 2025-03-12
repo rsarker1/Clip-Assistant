@@ -2,8 +2,6 @@ import os
 import asyncio
 import logging
 import yaml
-import simpleobsws
-import vosk
 from obscontroller import OBSRecordingController
 
 def set_config_values():
