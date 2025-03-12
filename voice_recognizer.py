@@ -19,7 +19,7 @@ class VoskVoiceRecognizer:
             self.model = Model(VOSK_MODEL_PATH)
             self.logger.info(f'Loaded Vosk model from {VOSK_MODEL_PATH}')
         except Exception as e:
-            self.logger.error(f'ERROR: Failed to load Vosk model, {e}')
+            self.logger.error(f'Failed to load Vosk model: {e}')
             sys.exit(1)
             
         self.recognizer = KaldiRecognizer(self.model, SAMPLE_RATE)
@@ -40,7 +40,8 @@ class VoskVoiceRecognizer:
                             self.logger.info('IT WORKS')
                     
             except Exception as e:
-                self.logger.error(f'ERROR: Could not process audio, {e}')
+                self.logger.error(f'Could not process audio: {e}')
+                sys.exit(1)
                 
                 
     def query_input_device(self):

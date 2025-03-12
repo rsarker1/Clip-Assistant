@@ -1,4 +1,5 @@
 import logging
+import sys
 from simpleobsws import WebSocketClient, Request
 
 class OBSRecordingController:
@@ -18,8 +19,10 @@ class OBSRecordingController:
             await self.ws.connect()
             await self.ws.wait_until_identified()
             self.logger.info('Connected to OBS WebSocket successfully')
+            
         except Exception as e:
-            self.logger.error(f'ERROR: Connection failed, {e}')
+            self.logger.error(f'Connection failed: {e}')
+            sys.exit(1)
     
     async def disconnect(self):
         if self.ws:
@@ -28,7 +31,7 @@ class OBSRecordingController:
     
     async def establish_connection(self):
         if not self.ws:
-            self.logger.error('ERROR: Not connected to OBS. Attempting to reconnect...')
+            self.logger.warning('Not connected to OBS. Attempting to reconnect...')
             await self.connect()
     
     async def start_recording(self):
@@ -39,8 +42,8 @@ class OBSRecordingController:
             rec_response = await self.ws.call(rec_request)
             
             if not rec_response.ok():
-                self.logger.error('ERROR: Failed to get recording status')
-                return
+                self.logger.error('Failed to get recording status')
+                sys.exit(1)
 
             if not rec_response.responseData['outputActive']:
                 start_rec_req = Request('StartRecord')
@@ -49,11 +52,14 @@ class OBSRecordingController:
                 if start_rec_res.ok():
                     self.logger.info('Recording started sucessfully')
                 else:
-                    self.logger.error(f'ERROR: Failed to start recording, {e}')
+                    self.logger.error(f'Failed to start recording: {e}')
+                    sys.exit(1)
             else:
-                self.logger.info('Recording already in progress')
+                self.logger.warning('Recording already in progress')
+                
         except Exception as e:
-            self.logger.error(f'ERROR: Failed to start recording, {e}')
+            self.logger.error(f'Failed to start recording: {e}')
+            sys.exit(1)
             
     async def stop_recording(self):
         await self.establish_connection()
@@ -63,8 +69,8 @@ class OBSRecordingController:
             rec_response = await self.ws.call(rec_request)
             
             if not rec_response.ok():
-                self.logger.error('ERROR: Failed to get recording status')
-                return
+                self.logger.error('Failed to get recording status')
+                sys.exit(1)
             
             if not rec_response.responseData['outputActive']:
                 stop_rec_req = Request('StopRecord')
@@ -73,10 +79,12 @@ class OBSRecordingController:
                 if stop_rec_res.ok():
                     self.logger.info('Recording stopped sucessfully')
                 else:
-                    self.logger.error(f'ERROR: Failed to stop recording, {e}')
+                    self.logger.error(f'Failed to stop recording: {e}')
+                    sys.exit(1)
             else:
-                self.logger.info('No active recording')
+                self.logger.warning('No active recording')
             
         except Exception as e:
-            self.logger.error(f'ERROR: Failed to stop recording, {e}')
+            self.logger.error(f'Failed to stop recording: {e}')
+            sys.exit(1)
             

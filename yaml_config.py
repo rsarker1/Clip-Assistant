@@ -18,12 +18,12 @@ def set_config_values():
             user_config['port'] = int(port)
             break
         except ValueError:
-            logger.error('ERROR: Unexpected data type received. Try again.')
+            print('ERROR: Unexpected data type received. Try again.')
     
     while True: 
         password = prompt_user('Enter the password (Found under Tools->Websocket Server Settings->Server Password): ')  
         if not password:
-            logger.error('ERROR: A password is required. Try again.')
+            print('ERROR: A password is required. Try again.')
         else:
             user_config['password'] = password
             break
