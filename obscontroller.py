@@ -19,7 +19,7 @@ class OBSRecordingController:
             await self.ws.wait_until_identified()
             self.logger.info('Connected to OBS WebSocket successfully')
         except Exception as e:
-            self.logger.error(f"ERROR: Connection failed, {e}")
+            self.logger.error(f'ERROR: Connection failed, {e}')
     
     async def disconnect(self):
         if self.ws:
@@ -49,11 +49,11 @@ class OBSRecordingController:
                 if start_rec_res.ok():
                     self.logger.info('Recording started sucessfully')
                 else:
-                    self.logger.error(f"ERROR: Failed to start recording, {e}")
+                    self.logger.error(f'ERROR: Failed to start recording, {e}')
             else:
                 self.logger.info('Recording already in progress')
         except Exception as e:
-            self.logger.error(f"ERROR: Failed to start recording, {e}")
+            self.logger.error(f'ERROR: Failed to start recording, {e}')
             
     async def stop_recording(self):
         await self.establish_connection()
@@ -73,10 +73,10 @@ class OBSRecordingController:
                 if stop_rec_res.ok():
                     self.logger.info('Recording stopped sucessfully')
                 else:
-                    self.logger.error(f"ERROR: Failed to stop recording, {e}")
+                    self.logger.error(f'ERROR: Failed to stop recording, {e}')
             else:
                 self.logger.info('No active recording')
             
         except Exception as e:
-            self.logger.error(f"ERROR: Failed to stop recording, {e}")
+            self.logger.error(f'ERROR: Failed to stop recording, {e}')
             

@@ -3,6 +3,7 @@ import asyncio
 import logging
 import yaml
 from obscontroller import OBSRecordingController
+from voskvoicerecognizer import VoskVoiceRecognizer
 
 def set_config_values():
     user_config = {
