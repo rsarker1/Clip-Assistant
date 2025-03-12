@@ -34,9 +34,26 @@ class VoskVoiceRecognizer:
                     text = result.get('text', '').lower()
                     
                     if text:
-                        self.logger.debug(f'')
+                        self.logger.debug(f'Recognized: {text}')
+                        
+                        if 'test' in text:
+                            self.logger.info('IT WORKS')
                     
             except Exception as e:
+                self.logger.error(f'ERROR: Could not process audio, {e}')
                 
-    def start(self):
+                
+    def query_input_device(self):
+        device_info = sd.query_devices()
     
+    
+    def start(self):
+        self.running = True
+        
+        # try:
+        #     with sd.RawInputStream(
+        #         samplerate=SAMPLE_RATE,
+        #         blocksize=8000,
+        #         device=
+        #     ):
+                
