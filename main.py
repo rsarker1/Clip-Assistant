@@ -31,7 +31,7 @@ async def main():
     await obs_controller.connect()
     hold = VoskVoiceRecognizer(obs_controller)
     try:
-        hold.start()
+        await hold.start()
     except KeyboardInterrupt:
         await obs_controller.disconnect()
         sys.exit(0)    

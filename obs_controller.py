@@ -72,7 +72,7 @@ class OBSRecordingController:
                 self.logger.error('Failed to get recording status')
                 sys.exit(1)
             
-            if not rec_response.responseData['outputActive']:
+            if rec_response.responseData['outputActive']:
                 stop_rec_req = Request('StopRecord')
                 stop_rec_res = await self.ws.call(stop_rec_req)
                 
