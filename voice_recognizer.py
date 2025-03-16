@@ -44,10 +44,10 @@ class VoskVoiceRecognizer:
                         self.logger.info(f'Recognized: {text}')
                         
                         if Phrases.START_REC_PHRASE.value in text:
-                            print('Recording')
+                            self.logger.info('START_REC_PHRASE found')
                             await self.obs_controller.start_recording()
                         elif Phrases.STOP_REC_PHRASE.value in text:
-                            print('Stopping')
+                            self.logger.info('STOP_REC_PHRASE found')
                             await self.obs_controller.stop_recording()
                                 
                             # case Phrases.CLIP_PHRASE:
@@ -55,16 +55,10 @@ class VoskVoiceRecognizer:
                         
                         
                         # NEED to take numerical text description of number and generate an actual int 
-                        if 'test' in text:
-                            self.logger.info('IT WORKS')
                                 
             except Exception as e:
                 self.logger.error(f'Could not process audio: {e}')
                 sys.exit(1)
-                
-    def find_input_device(self):
-        input_device = sd.default.device[0]
-        return sd.query_devices(input_device)
     
     def voice_callback(self, indata, frames, time, status):
         if status:
@@ -74,6 +68,8 @@ class VoskVoiceRecognizer:
     async def start(self):
         self.isRunning = True
         default_input = sd.default.device[0]
+        
+        await self.obs_controller.connect()
         try:
             with sd.RawInputStream(
                 samplerate=SAMPLE_RATE,
@@ -88,3 +84,8 @@ class VoskVoiceRecognizer:
         except Exception as e:
             self.logger.error(f'Could not start audio steam: {e}')
             self.isRunning = False
+            
+    async def stop(self):
+        self.isRunning = False
+        await self.obs_controller.disconnect()
+

@@ -28,12 +28,12 @@ async def main():
         port=config['port'],
         password=config['password']
     )
-    await obs_controller.connect()
-    hold = VoskVoiceRecognizer(obs_controller)
+
+    voice_recognize = VoskVoiceRecognizer(obs_controller)
     try:
-        await hold.start()
+        await voice_recognize.start()
     except KeyboardInterrupt:
-        await obs_controller.disconnect()
+        await voice_recognize.stop()
         sys.exit(0)    
     finally:
         logger.info('Ended')
