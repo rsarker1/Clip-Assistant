@@ -34,27 +34,38 @@ class VoskVoiceRecognizer:
                     text = result.get('text', '').lower()
                     
                     if text:
-                        self.logger.debug(f'Recognized: {text}')
+                        self.logger.info(f'Recognized: {text}')
                         
                         if 'test' in text:
                             self.logger.info('IT WORKS')
-                    
+                                
             except Exception as e:
                 self.logger.error(f'Could not process audio: {e}')
                 sys.exit(1)
                 
-                
-    def query_input_device(self):
-        device_info = sd.query_devices()
+    def find_input_device(self):
+        input_device = sd.default.device[0]
+        return sd.query_devices(input_device)
     
-    
-    def start(self):
-        self.running = True
+    def voice_callback(self, indata, frames, time, status):
+        if status:
+            self.logger.warning(f'Audio status: {status}')
+        self.queue.put(bytes(indata))
         
-        # try:
-        #     with sd.RawInputStream(
-        #         samplerate=SAMPLE_RATE,
-        #         blocksize=8000,
-        #         device=
-        #     ):
-                
+    def start(self):
+        self.isRunning = True
+        default_input = sd.default.device[0]
+        try:
+            with sd.RawInputStream(
+                samplerate=SAMPLE_RATE,
+                blocksize=8000,
+                device=default_input,
+                dtype='int16',
+                channels=1,
+                callback=self.voice_callback
+            ):
+                self.process_audio()
+
+        except Exception as e:
+            self.logger.error(f'Could not start audio steam: {e}')
+            self.isRunning = False

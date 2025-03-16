@@ -1,12 +1,13 @@
 import asyncio
 import logging
+import sys
 from datetime import datetime
 from yaml_config import load_config
 from obs_controller import OBSRecordingController
 from voice_recognizer import VoskVoiceRecognizer
 
-async def main():
-    logger = logging.getLogger(__name__)
+def setup_logging():
+    log_file = logging.getLogger(__name__)
     current_date = datetime.today().strftime('%Y_%m_%d')
     logging.basicConfig(
         filename=f'clip_assistant_{current_date}.log', 
@@ -15,6 +16,10 @@ async def main():
         datefmt='%H:%M:%S',
         level=logging.INFO
     )
+    return log_file
+
+async def main():
+    logger = setup_logging()
     logger.info('Started')
     
     config = load_config()
@@ -24,10 +29,13 @@ async def main():
         password=config['password']
     )
     await obs_controller.connect()
-    await obs_controller.disconnect()
-    
-    logger.info('Ended')
+    hold = VoskVoiceRecognizer(obs_controller)
+    try:
+        hold.start()
+    except KeyboardInterrupt:
+        await obs_controller.disconnect()
+        sys.exit(0)    
+    finally:
+        logger.info('Ended')
     
 asyncio.run(main())
-
-# Add date to log file to specify when log is from
