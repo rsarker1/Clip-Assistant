@@ -29,6 +29,17 @@ def set_config_values():
             break
         
     return user_config
+
+def is_valid_config(config):
+    required_keys = {'host', 'port', 'password'}
+    if len(config.keys()) > len(required_keys):
+        return False
+    
+    for required in required_keys:
+        if config.get(required) == None:
+            return False
+           
+    return True
     
 def prompt_user(text, default_value=None):
     user_def = input(text)
@@ -40,8 +51,18 @@ def load_config(file_name='config.yaml'):
     print('Checking if config file exists...')
     if os.path.exists(file_name):
         print('Config found')
+        logger.info('Config exists')
+        
         with open(file_name, 'r') as file:
             config = yaml.safe_load(file)
+            if is_valid_config(config):
+                logger.info('Existing config valid')
+            else:
+                logger.warning('Existing config invalid')
+                print('Existing config invalid. Generating new config...')
+                config = set_config_values()
+                with open(file_name, 'w') as file:
+                    yaml.dump(config, file, default_flow_style=False)
     else:
         print('Config does not exist. Generating...')
         config = set_config_values()

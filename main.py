@@ -29,13 +29,13 @@ async def main():
         password=config['password']
     )
 
-    voice_recognize = VoskVoiceRecognizer(obs_controller)
-    try:
-        await voice_recognize.start()
-    except KeyboardInterrupt:
-        await voice_recognize.stop()
-        sys.exit(0)    
-    finally:
-        logger.info('Ended')
+    # voice_recognize = VoskVoiceRecognizer(obs_controller)
+    # try:
+    #     await voice_recognize.start()
+    # except KeyboardInterrupt:
+    #     await voice_recognize.stop()
+    #     sys.exit(0)    
+    # finally:
+    #     logger.info('Ended')
     
 asyncio.run(main())
