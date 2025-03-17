@@ -50,16 +50,36 @@ class VoskVoiceRecognizer:
                         if Phrases.START_REC_PHRASE.value in text:
                             self.logger.info('START_REC_PHRASE found')
                             await self.obs_controller.start_recording()
+                            
                         elif Phrases.STOP_REC_PHRASE.value in text:
                             self.logger.info('STOP_REC_PHRASE found')
                             await self.obs_controller.stop_recording()
+                            
+                        elif Phrases.START_REPLAY_PHRASE.value in text:
+                            self.logger.info('START_REPLAY_PHRASE found')
+                            await self.obs_controller.start_replay_buffer()
+                            
+                        elif Phrases.STOP_REPLAY_PHRASE.value in text:
+                            self.logger.info('STOP_REPLAY_PHRASE found')
+                            await self.obs_controller.stop_replay_buffer()
+                            
+                        elif Phrases.START_EVERYTHING_PHRASE.value in text:
+                            self.logger.info('START_EVERYTHING_PHRASE found')
+                            await self.obs_controller.start_recording()
+                            await self.obs_controller.start_replay_buffer()
+                            
+                        elif Phrases.STOP_EVERYTHING_PHRASE.value in text:
+                            self.logger.info('STOP_EVERYTHING_PHRASE found')
+                            await self.obs_controller.stop_recording()
+                            await self.obs_controller.stop_replay_buffer()                            
+                            
                         elif any(phrase in text for phrase in Phrases.CLIP_PHRASE.value):
                             self.logger.info('CLIP_PHRASE found')
                             await self.obs_controller.save_replay_buffer()
-                                
+                                                          
             except Exception as e:
                 self.logger.error(f'Could not process audio: {e}')
-                sys.exit(1)
+                sys.exit(1)      
     
     def voice_callback(self, indata, frames, time, status):
         if status:

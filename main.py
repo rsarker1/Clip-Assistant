@@ -29,14 +29,14 @@ async def main():
         password=config['password']
     )
     
-    await obs_controller.save_replay_buffer()    
-    # voice_recognize = VoskVoiceRecognizer(obs_controller)
-    # try:
-    #     await voice_recognize.start()
-    # except KeyboardInterrupt:
-    #     await voice_recognize.stop()
-    #     sys.exit(0)    
-    # finally:
-    #     logger.info('Ended')
+    # await obs_controller.save_replay_buffer()    
+    voice_recognize = VoskVoiceRecognizer(obs_controller)
+    try:
+        await voice_recognize.start()
+    except KeyboardInterrupt:
+        await voice_recognize.stop()
+        sys.exit(0)    
+    finally:
+        logger.info('Ended')
     
 asyncio.run(main())
