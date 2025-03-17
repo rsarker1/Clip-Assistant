@@ -28,7 +28,8 @@ async def main():
         port=config['port'],
         password=config['password']
     )
-
+    
+    await obs_controller.save_replay_buffer()    
     # voice_recognize = VoskVoiceRecognizer(obs_controller)
     # try:
     #     await voice_recognize.start()

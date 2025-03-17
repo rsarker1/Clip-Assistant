@@ -88,3 +88,83 @@ class OBSRecordingController:
             self.logger.error(f'Failed to stop recording: {e}')
             sys.exit(1)
             
+    async def start_replay_buffer(self):
+        await self.establish_connection()
+        
+        try:
+            replay_request = Request('GetReplayBufferStatus')
+            replay_response = await self.ws.call(replay_request)
+            
+            if not replay_response.ok():
+                self.logger.error('Failed to get replay status')
+                sys.exit(1)
+                
+            if replay_response.responseData['outputActive']:
+                start_replay_req = Request('StartReplayBuffer')
+                start_replay_res = await self.ws.call(start_replay_req)
+                
+                if start_replay_res.ok():
+                    self.logger.info('Replay buffer started successfully')
+                else:
+                    self.logger.error(f'Failed to start replay buffer: {e}')
+                    sys.exit(1)
+            else:
+                self.logger.warning('Replay buffer already active')
+            
+        except Exception as e:
+            self.logger.error(f'Failed to start replay buffer: {e}')
+            sys.exit(1)
+            
+    async def stop_replay_buffer(self):
+        await self.establish_connection()
+        
+        try:
+            replay_request = Request('GetReplayBufferStatus')
+            replay_response = await self.ws.call(replay_request)
+            
+            if not replay_response.ok():
+                self.logger.error('Failed to get replay status')
+                sys.exit(1)
+                
+            if replay_response.responseData['outputActive']:
+                stop_replay_req = Request('StopReplayBuffer')
+                stop_replay_res = await self.ws.call(stop_replay_req)
+                
+                if stop_replay_res.ok():
+                    self.logger.info('Replay buffer stopped successfully')
+                else:
+                    self.logger.error(f'Failed to stop replay buffer: {e}')
+                    sys.exit(1)
+            else:
+                self.logger.warning('Replay buffer not active')
+            
+        except Exception as e:
+            self.logger.error(f'Failed to stop replay buffer: {e}')
+            sys.exit(1)
+        
+    async def save_replay_buffer(self):
+        await self.establish_connection()
+        
+        try:
+            replay_request = Request('GetReplayBufferStatus')
+            replay_response = await self.ws.call(replay_request)
+            print(replay_response)
+            if not replay_response.ok():
+                self.logger.error('Failed to get replay status')
+                sys.exit(1)
+                
+            if replay_response.responseData['outputActive']:
+                save_replay_req = Request('SaveReplayBuffer')
+                save_replay_res = await self.ws.call(save_replay_req)
+                
+                if save_replay_res.ok():
+                    self.logger.info('Replay buffer saved successfully')
+                else:
+                    self.logger.error(f'Failed to save replay buffer: {e}')
+                    sys.exit(1)
+            else:
+                self.logger.warning('Replay buffer already saving')
+            
+        except Exception as e:
+            self.logger.error(f'Failed to save replay buffer: {e}')
+            sys.exit(1)

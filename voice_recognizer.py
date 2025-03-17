@@ -14,7 +14,11 @@ SAMPLE_RATE = 16000                   # Frequency for human voice
 class Phrases(Enum):
     START_REC_PHRASE = 'freya start recording'
     STOP_REC_PHRASE = 'freya stop recording'
-    CLIP_PHRASE = 'freya clip'
+    START_REPLAY_PHRASE = 'freya start the replay'
+    STOP_REPLAY_PHRASE = 'freya stop the replay'
+    START_EVERYTHING_PHRASE = 'freya start everything'
+    STOP_EVERYTHING_PHRASE = 'freya stop everything'
+    CLIP_PHRASE = ['freya clip it', 'freya clip that']
 
 class VoskVoiceRecognizer:
     def __init__(self, obs_controller):
@@ -49,12 +53,9 @@ class VoskVoiceRecognizer:
                         elif Phrases.STOP_REC_PHRASE.value in text:
                             self.logger.info('STOP_REC_PHRASE found')
                             await self.obs_controller.stop_recording()
-                                
-                            # case Phrases.CLIP_PHRASE:
-                        
-                        
-                        
-                        # NEED to take numerical text description of number and generate an actual int 
+                        elif any(phrase in text for phrase in Phrases.CLIP_PHRASE.value):
+                            self.logger.info('CLIP_PHRASE found')
+                            await self.obs_controller.save_replay_buffer()
                                 
             except Exception as e:
                 self.logger.error(f'Could not process audio: {e}')

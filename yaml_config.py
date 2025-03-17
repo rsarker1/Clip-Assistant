@@ -69,5 +69,6 @@ def load_config(file_name='config.yaml'):
         with open(file_name, 'w') as file:
             yaml.dump(config, file, default_flow_style=False)
             
+    logger.info('Config loaded correctly')
     print('Config loaded')
     return config
