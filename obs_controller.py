@@ -2,8 +2,12 @@ import logging
 import sys
 from simpleobsws import WebSocketClient, Request
 
-class OBSRecordingController:
+from PySide6.QtCore import QObject, Signal, Slot
+
+class OBSRecordingController(QObject):
     def __init__(self, host, port, password):
+        super().__init__()
+        
         self.host = host
         self.port = port
         self.password = password

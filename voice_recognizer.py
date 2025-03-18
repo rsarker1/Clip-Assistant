@@ -8,6 +8,8 @@ from queue import Queue
 import sounddevice as sd
 from vosk import Model, KaldiRecognizer
 
+from PySide6.QtCore import QObject, Signal, Slot
+
 VOSK_MODEL_PATH = './model'           
 SAMPLE_RATE = 16000                   # Frequency for human voice
 
@@ -20,8 +22,10 @@ class Phrases(Enum):
     STOP_EVERYTHING_PHRASE = 'freya stop everything'
     CLIP_PHRASE = ['freya clip it', 'freya clip that']
 
-class VoskVoiceRecognizer:
+class VoskVoiceRecognizer(QObject):
     def __init__(self, obs_controller):
+        super().__init__()
+        
         self.queue = Queue()
         self.logger = logging.getLogger(__name__)
         self.isRunning = False
