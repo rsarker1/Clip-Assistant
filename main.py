@@ -5,17 +5,17 @@ from datetime import datetime
 from yaml_config import load_config
 from obs_controller import OBSRecordingController
 from voice_recognizer import VoskVoiceRecognizer
-from PySide6 import QtWidgets, QtGui
+
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QMessageBox
 from PySide6.QtGui import QIcon, QAction
 from PySide6.QtCore import QThread, Signal, Slot, Qt
 
-class OBS_VoiceCTRL_SystemTray():
-    
+class Freya_for_OBS:
     def __init__(self):
-        self.app = QtWidgets.QApplication()
+        self.app = QApplication()
         self.app.setQuitOnLastWindowClosed(False)
         
-        self.tray_icon = QtWidgets.QSystemTrayIcon(QIcon('./mic.png'), self.app)
+        self.tray_icon = QSystemTrayIcon(QIcon('./mic.png'), self.app)
         
         self.create_context_menu()
         
@@ -25,7 +25,7 @@ class OBS_VoiceCTRL_SystemTray():
         self.tray_icon.setToolTip('Voice-controller for OBS')
         
     def create_context_menu(self):
-        tray_menu = QtWidgets.QMenu()
+        tray_menu = QMenu()
         
         show_message_action = tray_menu.addAction('Show Message')
         show_message_action.triggered.connect(self.show_message)
@@ -36,7 +36,7 @@ class OBS_VoiceCTRL_SystemTray():
         self.tray_menu = tray_menu
         
     def show_message(self):
-        QtWidgets.QMessageBox.information(None, "Hello", "Test box")
+        QMessageBox.information(None, "Hello", "Test box")
     
     def run(self):
         self.app.exec()
@@ -68,7 +68,7 @@ async def main():
         password=config['password']
     )
     
-    app = OBS_VoiceCTRL_SystemTray() 
+    app = Freya_for_OBS() 
     app.run()
     
     # voice_recognize = VoskVoiceRecognizer(obs_controller)
