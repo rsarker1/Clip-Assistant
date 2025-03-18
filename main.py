@@ -5,6 +5,45 @@ from datetime import datetime
 from yaml_config import load_config
 from obs_controller import OBSRecordingController
 from voice_recognizer import VoskVoiceRecognizer
+from PySide6 import QtWidgets, QtGui
+from PySide6.QtGui import QIcon, QAction
+from PySide6.QtCore import QThread, Signal, Slot, Qt
+
+class OBS_VoiceCTRL_SystemTray():
+    
+    def __init__(self):
+        self.app = QtWidgets.QApplication()
+        self.app.setQuitOnLastWindowClosed(False)
+        
+        self.tray_icon = QtWidgets.QSystemTrayIcon(QIcon('./mic.png'), self.app)
+        
+        self.create_context_menu()
+        
+        self.tray_icon.setContextMenu(self.tray_menu)
+        
+        self.tray_icon.show()
+        self.tray_icon.setToolTip('Voice-controller for OBS')
+        
+    def create_context_menu(self):
+        tray_menu = QtWidgets.QMenu()
+        
+        show_message_action = tray_menu.addAction('Show Message')
+        show_message_action.triggered.connect(self.show_message)
+
+        exit_action = tray_menu.addAction('Exit')
+        exit_action.triggered.connect(self.exit)
+        
+        self.tray_menu = tray_menu
+        
+    def show_message(self):
+        QtWidgets.QMessageBox.information(None, "Hello", "Test box")
+    
+    def run(self):
+        self.app.exec()
+    
+    def exit(self):
+        sys.exit()
+        
 
 def setup_logging():
     log_file = logging.getLogger(__name__)
@@ -29,14 +68,16 @@ async def main():
         password=config['password']
     )
     
-    # await obs_controller.save_replay_buffer()    
-    voice_recognize = VoskVoiceRecognizer(obs_controller)
-    try:
-        await voice_recognize.start()
-    except KeyboardInterrupt:
-        await voice_recognize.stop()
-        sys.exit(0)    
-    finally:
-        logger.info('Ended')
+    app = OBS_VoiceCTRL_SystemTray() 
+    app.run()
+    
+    # voice_recognize = VoskVoiceRecognizer(obs_controller)
+    # try:
+    #     await voice_recognize.start()
+    # except KeyboardInterrupt:
+    #     await voice_recognize.stop()
+    #     sys.exit(0)    
+    # finally:
+    #     logger.info('Ended')
     
 asyncio.run(main())
