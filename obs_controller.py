@@ -7,12 +7,12 @@ from PySide6.QtCore import QObject, Signal, Slot
 class OBSRecordingController(QObject):
     def __init__(self, host, port, password):
         super().__init__()
+        self.logger = logging.getLogger(__name__)
         
         self.host = host
         self.port = port
         self.password = password
         self.ws = None
-        self.logger = logging.getLogger(__name__)
         
     async def connect(self):
         try:

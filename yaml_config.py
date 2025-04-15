@@ -12,6 +12,7 @@ def set_config_values():
     
     user_config['host'] = prompt_user('Enter the host address: ', user_config['host'])
     
+    # Will remove soon by integrating a settings window 
     while True:
         port = prompt_user('Enter the specified port: ', user_config['port'])
         try:

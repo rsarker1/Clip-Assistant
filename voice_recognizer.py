@@ -25,9 +25,9 @@ class Phrases(Enum):
 class VoskVoiceRecognizer(QObject):
     def __init__(self, obs_controller):
         super().__init__()
+        self.logger = logging.getLogger(__name__)
         
         self.queue = Queue()
-        self.logger = logging.getLogger(__name__)
         self.isRunning = False
         
         try:
@@ -40,6 +40,35 @@ class VoskVoiceRecognizer(QObject):
         self.recognizer = KaldiRecognizer(self.model, SAMPLE_RATE)
         self.obs_controller = obs_controller
         
+        self.commands = {
+            Phrases.START_REC_PHRASE.value: (
+                "START_REC_PHRASE found",
+                [lambda: self.obs_controller.start_recording()]
+            ),
+            Phrases.STOP_REC_PHRASE.value: (
+                "STOP_REC_PHRASE found", 
+                [lambda: self.obs_controller.stop_recording()]
+            ),
+            Phrases.START_REPLAY_PHRASE.value: (
+                "START_REPLAY_PHRASE found", 
+                [lambda: self.obs_controller.start_replay_buffer()]
+            ),
+            Phrases.STOP_REPLAY_PHRASE.value: (
+                "STOP_REPLAY_PHRASE found", 
+                [lambda: self.obs_controller.stop_replay_buffer()]
+            ),
+            Phrases.START_EVERYTHING_PHRASE.value: (
+                "START_EVERYTHING_PHRASE found", 
+                [lambda: self.obs_controller.start_recording(),
+                lambda: self.obs_controller.start_replay_buffer()]
+            ),
+            Phrases.STOP_EVERYTHING_PHRASE.value: (
+                "STOP_EVERYTHING_PHRASE found", 
+                [lambda: self.obs_controller.stop_recording(),
+                lambda: self.obs_controller.stop_replay_buffer()]
+            ),
+        }
+        
     async def process_audio(self):
         while self.isRunning:
             try:
@@ -48,43 +77,27 @@ class VoskVoiceRecognizer(QObject):
                     result = json.loads(self.recognizer.Result())
                     text = result.get('text', '').lower()
                     
-                    if text:
-                        self.logger.info(f'Recognized: {text}')
-                        
-                        if Phrases.START_REC_PHRASE.value in text:
-                            self.logger.info('START_REC_PHRASE found')
-                            await self.obs_controller.start_recording()
-                            
-                        elif Phrases.STOP_REC_PHRASE.value in text:
-                            self.logger.info('STOP_REC_PHRASE found')
-                            await self.obs_controller.stop_recording()
-                            
-                        elif Phrases.START_REPLAY_PHRASE.value in text:
-                            self.logger.info('START_REPLAY_PHRASE found')
-                            await self.obs_controller.start_replay_buffer()
-                            
-                        elif Phrases.STOP_REPLAY_PHRASE.value in text:
-                            self.logger.info('STOP_REPLAY_PHRASE found')
-                            await self.obs_controller.stop_replay_buffer()
-                            
-                        elif Phrases.START_EVERYTHING_PHRASE.value in text:
-                            self.logger.info('START_EVERYTHING_PHRASE found')
-                            await self.obs_controller.start_recording()
-                            await self.obs_controller.start_replay_buffer()
-                            
-                        elif Phrases.STOP_EVERYTHING_PHRASE.value in text:
-                            self.logger.info('STOP_EVERYTHING_PHRASE found')
-                            await self.obs_controller.stop_recording()
-                            await self.obs_controller.stop_replay_buffer()                            
-                            
-                        elif any(phrase in text for phrase in Phrases.CLIP_PHRASE.value):
-                            self.logger.info('CLIP_PHRASE found')
-                            await self.obs_controller.save_replay_buffer()
+                    await self.phrase_handler(text)
                                                           
             except Exception as e:
                 self.logger.error(f'Could not process audio: {e}')
                 sys.exit(1)      
     
+    async def phrase_handler(self, text):
+        if text: 
+            self.logger.info(f'Recognized: {text}')
+        
+        if any(phrase in text for phrase in Phrases.CLIP_PHRASE.value):
+            self.logger.info('CLIP_PHRASE found')
+            await self.obs_controller.save_replay_buffer()
+        
+        # If not a multi phrase command, run through here
+        for phrase_key, (log_info, phrase_commands) in self.commands.items():
+            if phrase_key in text:
+                self.logger.info(log_info)
+                for func in phrase_commands:
+                    await func()
+                    
     def voice_callback(self, indata, frames, time, status):
         if status:
             self.logger.warning(f'Audio status: {status}')
