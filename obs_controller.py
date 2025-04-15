@@ -29,6 +29,7 @@ class OBSRecordingController(QObject):
             sys.exit(1)
     
     async def disconnect(self):
+        self.logger.info('I ran')
         if self.ws:
             await self.ws.disconnect()
             self.logger.info('Disconnected from OBS WebSocket')

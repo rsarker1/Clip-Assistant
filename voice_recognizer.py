@@ -4,7 +4,7 @@ import json
 import asyncio
 from enum import Enum
 import threading
-from queue import Queue
+from queue import Queue, Empty
 import sounddevice as sd
 from vosk import Model, KaldiRecognizer
 
@@ -37,6 +37,7 @@ class VoskVoiceRecognizer(QObject):
             self.logger.error(f'Failed to load Vosk model: {e}')
             sys.exit(1)
             
+        self.audio_stream = None
         self.recognizer = KaldiRecognizer(self.model, SAMPLE_RATE)
         self.obs_controller = obs_controller
         
@@ -72,16 +73,22 @@ class VoskVoiceRecognizer(QObject):
     async def process_audio(self):
         while self.isRunning:
             try:
-                data = self.queue.get()
+                try:
+                    data = self.queue.get(timeout=0.5)
+                except Empty:
+                    continue  
+                if data is None:
+                    self.logger.info('Did we break?')
+                    break
+                
                 if self.recognizer.AcceptWaveform(data):
                     result = json.loads(self.recognizer.Result())
                     text = result.get('text', '').lower()
-                    
-                    await self.phrase_handler(text)
-                                                          
+                    await self.phrase_handler(text)                                             
             except Exception as e:
                 self.logger.error(f'Could not process audio: {e}')
-                sys.exit(1)      
+                break
+                # sys.exit(1)    
     
     async def phrase_handler(self, text):
         if text: 
@@ -104,26 +111,45 @@ class VoskVoiceRecognizer(QObject):
         self.queue.put(bytes(indata))
         
     async def start(self):
+        self.logger.info('Starting voice recognition')
         self.isRunning = True
         default_input = sd.default.device[0]
         
         await self.obs_controller.connect()
         try:
-            with sd.RawInputStream(
+            self.audio_stream = sd.RawInputStream(
                 samplerate=SAMPLE_RATE,
                 blocksize=8000,
                 device=default_input,
                 dtype='int16',
                 channels=1,
                 callback=self.voice_callback
-            ):
-                await self.process_audio()
-
+            )
+            self.audio_stream.start()
+            await self.process_audio()
         except Exception as e:
             self.logger.error(f'Could not start audio steam: {e}')
             self.isRunning = False
             
     async def stop(self):
+        self.logger.info('Closing voice recognition')
         self.isRunning = False
+        
+        self.logger.info('Putting sentinel into the queue')
+        self.queue.put(None)
+        await asyncio.sleep(0.1)
+        
+        
+        
+        
+        if self.audio_stream:
+            self.logger.info('Stopping and closing audio stream')
+            self.audio_stream.stop()
+            self.audio_stream.close()
+            self.audio_stream = None
+            
+        
+        self.logger.info('Awaiting OBS disconnect...')
         await self.obs_controller.disconnect()
+        self.logger.error("OBS disconnected")
 
