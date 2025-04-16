@@ -34,10 +34,7 @@ async def main():
     
     # voice_recognize = VoskVoiceRecognizer(obs_controller)
     # try:
-    #     await voice_recognize.start()
-    # except KeyboardInterrupt:
-    #     await voice_recognize.stop()
-    #     sys.exit(0)    
+    #     await voice_recognize.start() 
     # finally:
     #     logger.info('Ended')
     

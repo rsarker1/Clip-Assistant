@@ -44,7 +44,7 @@ class VoskVoiceRecognizer(QObject):
         self.commands = {
             Phrases.START_REC_PHRASE.value: (
                 "START_REC_PHRASE found",
-                [lambda: self.obs_controller.start_recording()]
+                [lambda: self.stop()]
             ),
             Phrases.STOP_REC_PHRASE.value: (
                 "STOP_REC_PHRASE found", 
@@ -73,23 +73,22 @@ class VoskVoiceRecognizer(QObject):
     async def process_audio(self):
         while self.isRunning:
             try:
-                try:
-                    data = self.queue.get(timeout=0.5)
-                except Empty:
-                    continue  
+                data = self.queue.get(timeout=0.1)
                 if data is None:
-                    self.logger.info('Did we break?')
                     break
                 
                 if self.recognizer.AcceptWaveform(data):
                     result = json.loads(self.recognizer.Result())
                     text = result.get('text', '').lower()
-                    await self.phrase_handler(text)                                             
+                    await self.phrase_handler(text)
+            except Empty:
+                continue                                               
             except Exception as e:
                 self.logger.error(f'Could not process audio: {e}')
                 break
-                # sys.exit(1)    
-    
+                # sys.exit(1) 
+        self.logger.info('Did we break?')
+           
     async def phrase_handler(self, text):
         if text: 
             self.logger.info(f'Recognized: {text}')
@@ -131,6 +130,9 @@ class VoskVoiceRecognizer(QObject):
             self.logger.error(f'Could not start audio steam: {e}')
             self.isRunning = False
             
+    def sync_stop(self):
+        return
+    
     async def stop(self):
         self.logger.info('Closing voice recognition')
         self.isRunning = False
@@ -139,17 +141,11 @@ class VoskVoiceRecognizer(QObject):
         self.queue.put(None)
         await asyncio.sleep(0.1)
         
-        
-        
-        
-        if self.audio_stream:
-            self.logger.info('Stopping and closing audio stream')
-            self.audio_stream.stop()
+        if self.audio_stream.active:
+            self.logger.info('Closing audio stream')
+            # self.audio_stream.stop()
             self.audio_stream.close()
             self.audio_stream = None
-            
-        
-        self.logger.info('Awaiting OBS disconnect...')
+    
         await self.obs_controller.disconnect()
-        self.logger.error("OBS disconnected")
 
