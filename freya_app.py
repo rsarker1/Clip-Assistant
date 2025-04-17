@@ -1,6 +1,7 @@
 import sys
 import logging
 import asyncio
+import threading
 from yaml_config import load_config
 from obs_controller import OBSRecordingController
 from voice_recognizer import VoskVoiceRecognizer
@@ -8,11 +9,12 @@ from voice_recognizer import VoskVoiceRecognizer
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QMessageBox
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import QThread, Signal, Slot
+from qt_async_threads import QtAsyncRunner
 
 
 class VoiceRecognizerThread(QThread):
-    def __init__(self, voice_recognizer):
-        super().__init__()
+    def __init__(self, voice_recognizer, parent):
+        super().__init__(parent)
         self.voice_recognizer = voice_recognizer
         self.exec_loop = None
 
@@ -23,12 +25,19 @@ class VoiceRecognizerThread(QThread):
         try:
             self.voice_task = self.exec_loop.create_task(self.voice_recognizer.start())
             self.exec_loop.run_forever()
+            # self.exec_loop.run_until_complete(
+            #     self.voice_recognizer.start()
+            # )
         except Exception as e:
             logging.info(f'Thread encountered an issue: {e}', exc_info=True)
+        finally:
+            logging.info('Are you here')
         
-    def stop(self):
+    def req_stop(self):
         if self.exec_loop and self.exec_loop.is_running():
             self.voice_recognizer.isRunning = False
+            logging.info('isRunning is now False')
+            # self.exec_loop.call_soon_threadsafe(self.voice_recognizer.stop())
             future = asyncio.run_coroutine_threadsafe(self.voice_recognizer.stop(), self.exec_loop)
             try:
                 future.result(timeout=5)
@@ -37,6 +46,7 @@ class VoiceRecognizerThread(QThread):
             finally:
                 logging.info('STOP')
                 self.exec_loop.stop()
+                print(self.exec_loop.is_running())
         
 class Freya_for_OBS:
     def __init__(self):
@@ -74,7 +84,8 @@ class Freya_for_OBS:
         
         self.vosk_recognizer = VoskVoiceRecognizer(obs_controller)
         
-        self.voice_thread = VoiceRecognizerThread(self.vosk_recognizer)
+        self.voice_thread = VoiceRecognizerThread(self.vosk_recognizer, self.app)
+      
         self.voice_thread.start()
         
     def show_message(self):
@@ -86,10 +97,12 @@ class Freya_for_OBS:
     
     def exit(self):
         self.logger.info('Started ending')
-        self.voice_thread.stop()
-        self.logger.info(self.voice_thread.exec_loop.is_running())
+        if self.voice_thread.isRunning():
+            self.logger.info('Requesting voice thread to stop...')
+            self.voice_thread.req_stop()
+            
         self.voice_thread.wait(5000)
-        self.voice_thread.quit()
+
         # if self.voice_thread.isRunning():
         #     self.logger.info('Thread running')
         #     if self.voice_thread.exec_loop.is_running():
@@ -106,5 +119,5 @@ class Freya_for_OBS:
         #         self.voice_thread.exec_loop.call_soon_threadsafe(self.voice_thread.exec_loop.stop)
         
         # self.voice_thread.wait()
-        # self.voice_thread.quit()
+        self.voice_thread.quit()
         self.app.quit()
