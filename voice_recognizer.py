@@ -85,9 +85,8 @@ class VoskVoiceRecognizer(QObject):
                 continue                                               
             except Exception as e:
                 self.logger.error(f'Could not process audio: {e}')
-                break
-                # sys.exit(1) 
-        self.logger.info('Did we break?')
+                break 
+        self.logger.info('Ceased audio processing')
            
     async def phrase_handler(self, text):
         if text: 
@@ -126,7 +125,7 @@ class VoskVoiceRecognizer(QObject):
             )
             self.audio_stream.start()
             await self.process_audio()
-        except Exception as e:
+        except Exception as e: # Test this eventually
             self.logger.error(f'Could not start audio steam: {e}')
             self.isRunning = False
             
@@ -135,15 +134,13 @@ class VoskVoiceRecognizer(QObject):
     
     async def stop(self):
         self.logger.info('Closing voice recognition')
-        self.isRunning = False
+        # self.isRunning = False
         
         self.logger.info('Putting sentinel into the queue')
         self.queue.put(None)
-        await asyncio.sleep(0.1)
         
         if self.audio_stream.active:
             self.logger.info('Closing audio stream')
-            # self.audio_stream.stop()
             self.audio_stream.close()
             self.audio_stream = None
     

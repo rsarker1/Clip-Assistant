@@ -9,12 +9,12 @@ from voice_recognizer import VoskVoiceRecognizer
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QMessageBox
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import QThread, Signal, Slot
-from qt_async_threads import QtAsyncRunner
 
 
 class VoiceRecognizerThread(QThread):
-    def __init__(self, voice_recognizer, parent):
-        super().__init__(parent)
+    def __init__(self, voice_recognizer):
+        super().__init__()
+        self.logger = logging.getLogger(__name__)
         self.voice_recognizer = voice_recognizer
         self.exec_loop = None
 
@@ -25,28 +25,22 @@ class VoiceRecognizerThread(QThread):
         try:
             self.voice_task = self.exec_loop.create_task(self.voice_recognizer.start())
             self.exec_loop.run_forever()
-            # self.exec_loop.run_until_complete(
-            #     self.voice_recognizer.start()
-            # )
         except Exception as e:
-            logging.info(f'Thread encountered an issue: {e}', exc_info=True)
-        finally:
-            logging.info('Are you here')
+            self.logger.error(f'Thread encountered an issue: {e}', exc_info=True)
         
     def req_stop(self):
         if self.exec_loop and self.exec_loop.is_running():
             self.voice_recognizer.isRunning = False
-            logging.info('isRunning is now False')
-            # self.exec_loop.call_soon_threadsafe(self.voice_recognizer.stop())
+            self.logger.info('Shutting down voice recognition execution')
+
             future = asyncio.run_coroutine_threadsafe(self.voice_recognizer.stop(), self.exec_loop)
             try:
                 future.result(timeout=5)
             except Exception as e:
-                logging.getLogger(__name__).info('Error during VoiceRecognizerThread stop()', exc_info=True)
+                self.logger.error(f'Thread encountered issue on stop(): {e}', exc_info=True)
             finally:
-                logging.info('STOP')
-                self.exec_loop.stop()
-                print(self.exec_loop.is_running())
+                self.exec_loop.call_soon_threadsafe(self.exec_loop.stop)
+
         
 class Freya_for_OBS:
     def __init__(self):
@@ -81,11 +75,9 @@ class Freya_for_OBS:
             port=config['port'],
             password=config['password']
         )
-        
         self.vosk_recognizer = VoskVoiceRecognizer(obs_controller)
-        
-        self.voice_thread = VoiceRecognizerThread(self.vosk_recognizer, self.app)
-      
+
+        self.voice_thread = VoiceRecognizerThread(self.vosk_recognizer)
         self.voice_thread.start()
         
     def show_message(self):
@@ -96,28 +88,13 @@ class Freya_for_OBS:
         self.app.exec()
     
     def exit(self):
-        self.logger.info('Started ending')
+        self.logger.info('Application closing')
         if self.voice_thread.isRunning():
             self.logger.info('Requesting voice thread to stop...')
             self.voice_thread.req_stop()
-            
-        self.voice_thread.wait(5000)
 
-        # if self.voice_thread.isRunning():
-        #     self.logger.info('Thread running')
-        #     if self.voice_thread.exec_loop.is_running():
-        #         self.logger.info('Loop running')
-                
-        #         self.voice_thread.exec_loop.stop()
-        #         voice_future = asyncio.run_coroutine_threadsafe(self.vosk_recognizer.stop(), self.voice_thread.exec_loop)
-                
-        #         try: 
-        #             voice_future.result(timeout=5)
-        #         except Exception as e:
-        #             self.logger.info(f'Error waiting for stop(): {e}', exc_info=True)
-                    
-        #         self.voice_thread.exec_loop.call_soon_threadsafe(self.voice_thread.exec_loop.stop)
-        
-        # self.voice_thread.wait()
+        self.voice_thread.wait()
         self.voice_thread.quit()
+        self.logger.info('Thread stopped')
+        
         self.app.quit()
