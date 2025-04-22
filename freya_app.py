@@ -57,7 +57,7 @@ class Freya_for_OBS:
         exit_action = self.tray_menu.addAction('Exit')
         exit_action.triggered.connect(self.exit)
         
-        self.tray_icon = QSystemTrayIcon(QIcon('./mic.png'), self.app)
+        self.tray_icon = QSystemTrayIcon(QIcon('./icons/mic.png'), self.app)
         self.tray_icon.setContextMenu(self.tray_menu)
         
         self.tray_icon.show()

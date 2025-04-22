@@ -41,28 +41,28 @@ class VoskVoiceRecognizer(QObject):
         
         self.commands = {
             Phrases.START_REC_PHRASE.value: (
-                "START_REC_PHRASE found",
+                'START_REC_PHRASE found',
                 [lambda: self.obs_controller.start_recording()]
             ),
             Phrases.STOP_REC_PHRASE.value: (
-                "STOP_REC_PHRASE found", 
+                'STOP_REC_PHRASE found', 
                 [lambda: self.obs_controller.stop_recording()]
             ),
             Phrases.START_REPLAY_PHRASE.value: (
-                "START_REPLAY_PHRASE found", 
+                'START_REPLAY_PHRASE found', 
                 [lambda: self.obs_controller.start_replay_buffer()]
             ),
             Phrases.STOP_REPLAY_PHRASE.value: (
-                "STOP_REPLAY_PHRASE found", 
+                'STOP_REPLAY_PHRASE found', 
                 [lambda: self.obs_controller.stop_replay_buffer()]
             ),
             Phrases.START_EVERYTHING_PHRASE.value: (
-                "START_EVERYTHING_PHRASE found", 
+                'START_EVERYTHING_PHRASE found', 
                 [lambda: self.obs_controller.start_recording(),
                 lambda: self.obs_controller.start_replay_buffer()]
             ),
             Phrases.STOP_EVERYTHING_PHRASE.value: (
-                "STOP_EVERYTHING_PHRASE found", 
+                'STOP_EVERYTHING_PHRASE found', 
                 [lambda: self.obs_controller.stop_recording(),
                 lambda: self.obs_controller.stop_replay_buffer()]
             ),

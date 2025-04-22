@@ -4,38 +4,12 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
-default_user_config = {
+FILE_NAME = 'config.yaml'
+DEFAULT_CONFIG = {
     'host': 'localhost',
-    'port': 4455
+    'port': 4455,
+    'password': 'password'
 }
-
-
-def set_config_values():
-    user_config = {
-        'host': 'localhost',
-        'port': 4455
-    }
-    
-    user_config['host'] = prompt_user('Enter the host address: ', user_config['host'])
-    
-    # Will remove soon by integrating a settings window 
-    while True:
-        port = prompt_user('Enter the specified port: ', user_config['port'])
-        try:
-            user_config['port'] = int(port)
-            break
-        except ValueError:
-            print('ERROR: Unexpected data type received. Try again.')
-    
-    while True: 
-        password = prompt_user('Enter the password (Found under Tools->Websocket Server Settings->Server Password): ')  
-        if not password:
-            print('ERROR: A password is required. Try again.')
-        else:
-            user_config['password'] = password
-            break
-        
-    return user_config
 
 def is_valid_config(config):
     required_keys = {'host', 'port', 'password'}
@@ -47,35 +21,26 @@ def is_valid_config(config):
             return False
            
     return True
-    
-def prompt_user(text, default_value=None):
-    user_def = input(text)
-    if not user_def:
-        user_def = default_value
-    return user_def
 
-def load_config(file_name='config.yaml'):
-    print('Checking if config file exists...')
-    if os.path.exists(file_name):
-        print('Config found')
-        logger.info('Config exists')
+def load_config():
+    logger.info('Checking if config file exists...')
+    if os.path.exists(FILE_NAME):
+        logger.info('Config found')
         
-        with open(file_name, 'r') as file:
+        with open(FILE_NAME, 'r') as file:
             config = yaml.safe_load(file)
             if is_valid_config(config):
                 logger.info('Existing config valid')
             else:
-                logger.warning('Existing config invalid')
-                print('Existing config invalid. Generating new config...')
-                config = set_config_values()
-                with open(file_name, 'w') as file:
-                    yaml.dump(config, file, default_flow_style=False)
+                logger.warning('Existing config invalid. Most likely will not connect to OBS.')
     else:
-        print('Config does not exist. Generating...')
-        config = set_config_values()
-        with open(file_name, 'w') as file:
-            yaml.dump(config, file, default_flow_style=False)
+        logger.info('Config does not exist. Generating...')
+        save_config(DEFAULT_CONFIG)
             
     logger.info('Config loaded correctly')
-    print('Config loaded')
     return config
+
+def save_config(config):
+    logger.info('Config saved')
+    with open(FILE_NAME, 'w') as file:
+        yaml.dump(config, file, default_flow_style=False)
