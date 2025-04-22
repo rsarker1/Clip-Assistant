@@ -1,14 +1,12 @@
 import logging
 import sys
 import json
-import asyncio
 from enum import Enum
-import threading
 from queue import Queue, Empty
 import sounddevice as sd
 from vosk import Model, KaldiRecognizer
 
-from PySide6.QtCore import QObject, Signal, Slot
+from PySide6.QtCore import QObject
 
 VOSK_MODEL_PATH = './model'           
 SAMPLE_RATE = 16000                   # Frequency for human voice
@@ -44,7 +42,7 @@ class VoskVoiceRecognizer(QObject):
         self.commands = {
             Phrases.START_REC_PHRASE.value: (
                 "START_REC_PHRASE found",
-                [lambda: self.stop()]
+                [lambda: self.obs_controller.start_recording()]
             ),
             Phrases.STOP_REC_PHRASE.value: (
                 "STOP_REC_PHRASE found", 

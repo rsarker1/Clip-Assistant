@@ -25,20 +25,5 @@ async def main():
     app = Freya_for_OBS() 
     app.run()
     
-    # config = load_config()
-    # obs_controller = OBSRecordingController(
-    #     host=config['host'],
-    #     port=config['port'],
-    #     password=config['password']
-    # )
-    
-    # voice_recognize = VoskVoiceRecognizer(obs_controller)
-    # try:
-    #     await voice_recognize.start() 
-    # finally:
-    #     logger.info('Ended')
-    
-
-    
 asyncio.run(main())
 

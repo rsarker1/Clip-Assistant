@@ -1,14 +1,14 @@
 import sys
 import logging
 import asyncio
-import threading
 from yaml_config import load_config
 from obs_controller import OBSRecordingController
 from voice_recognizer import VoskVoiceRecognizer
 
-from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QMessageBox
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu
 from PySide6.QtGui import QIcon
 from PySide6.QtCore import QThread, Signal, Slot
+from settings_window import SettingsWindow
 
 
 class VoiceRecognizerThread(QThread):
@@ -51,8 +51,8 @@ class Freya_for_OBS:
         
         self.tray_menu = QMenu()
         
-        show_message_action = self.tray_menu.addAction('Settings')
-        show_message_action.triggered.connect(self.show_message)
+        settings_action = self.tray_menu.addAction('Settings')
+        settings_action.triggered.connect(self.show_settings)
 
         exit_action = self.tray_menu.addAction('Exit')
         exit_action.triggered.connect(self.exit)
@@ -64,9 +64,6 @@ class Freya_for_OBS:
         self.tray_icon.setToolTip('Voice-controller for OBS')
         
         self.setup_voice_control()
-        
-    def setup_app_interface(self):
-        return
         
     def setup_voice_control(self):
         config = load_config()
@@ -80,8 +77,14 @@ class Freya_for_OBS:
         self.voice_thread = VoiceRecognizerThread(self.vosk_recognizer)
         self.voice_thread.start()
         
-    def show_message(self):
-        QMessageBox.information(None, "Settings", "Settings will eventually be here")
+    def show_settings(self):
+        self.settings_window = SettingsWindow()
+        self.settings_window.settings_updated.connect(self.save_settings)
+        self.settings_window.show()
+    
+    @Slot(str, int, str)
+    def save_settings(self, host, port, password):
+        self.logger.info(f'Settings updated: host={host}, port={port}')
     
     def run(self):
         self.logger.info('Application started')

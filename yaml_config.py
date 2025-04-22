@@ -4,6 +4,12 @@ import yaml
 
 logger = logging.getLogger(__name__)
 
+default_user_config = {
+    'host': 'localhost',
+    'port': 4455
+}
+
+
 def set_config_values():
     user_config = {
         'host': 'localhost',
