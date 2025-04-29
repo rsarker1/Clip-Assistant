@@ -1,5 +1,4 @@
 import logging
-import sys
 import json
 from enum import Enum
 from queue import Queue, Empty
@@ -9,7 +8,6 @@ from vosk import Model, KaldiRecognizer
 from PySide6.QtCore import QObject
 
 VOSK_MODEL_PATH = './model'           
-SAMPLE_RATE = 16000                   # Frequency for human voice
 
 class Phrases(Enum):
     START_REC_PHRASE = 'freya start recording'
@@ -33,10 +31,10 @@ class VoskVoiceRecognizer(QObject):
             self.logger.info(f'Loaded Vosk model from {VOSK_MODEL_PATH}')
         except Exception as e:
             self.logger.error(f'Failed to load Vosk model: {e}')
-            sys.exit(1)
+            raise
             
         self.audio_stream = None
-        self.recognizer = KaldiRecognizer(self.model, SAMPLE_RATE)
+        self.recognizer = KaldiRecognizer(self.model, 16000)
         self.obs_controller = obs_controller
         
         self.commands = {
@@ -92,14 +90,20 @@ class VoskVoiceRecognizer(QObject):
         
         if any(phrase in text for phrase in Phrases.CLIP_PHRASE.value):
             self.logger.info('CLIP_PHRASE found')
-            await self.obs_controller.save_replay_buffer()
+            try:
+                await self.obs_controller.save_replay_buffer()
+            except Exception as e:
+                raise
         
         # If not a multi phrase command, run through here
         for phrase_key, (log_info, phrase_commands) in self.commands.items():
             if phrase_key in text:
                 self.logger.info(log_info)
                 for func in phrase_commands:
-                    await func()
+                    try:
+                        await func()
+                    except Exception as e:
+                        raise
                     
     def voice_callback(self, indata, frames, time, status):
         if status:
@@ -111,10 +115,11 @@ class VoskVoiceRecognizer(QObject):
         self.isRunning = True
         default_input = sd.default.device[0]
         
-        await self.obs_controller.connect()
         try:
+            await self.obs_controller.connect()
+            
             self.audio_stream = sd.RawInputStream(
-                samplerate=SAMPLE_RATE,
+                samplerate=16000,
                 blocksize=8000,
                 device=default_input,
                 dtype='int16',
@@ -123,17 +128,14 @@ class VoskVoiceRecognizer(QObject):
             )
             self.audio_stream.start()
             await self.process_audio()
-        except Exception as e: # Test this eventually
+        except Exception as e: 
             self.logger.error(f'Could not start audio steam: {e}')
             self.isRunning = False
-            
-    def sync_stop(self):
-        return
+            raise
     
     async def stop(self):
         self.logger.info('Closing voice recognition')
-        # self.isRunning = False
-        
+
         self.logger.info('Putting sentinel into the queue')
         self.queue.put(None)
         
@@ -141,6 +143,8 @@ class VoskVoiceRecognizer(QObject):
             self.logger.info('Closing audio stream')
             self.audio_stream.close()
             self.audio_stream = None
-    
-        await self.obs_controller.disconnect()
+        try:
+            await self.obs_controller.disconnect()
+        except Exception as e:
+            raise
 

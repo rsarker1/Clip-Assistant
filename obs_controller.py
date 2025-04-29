@@ -25,8 +25,8 @@ class OBSRecordingController(QObject):
             self.logger.info('Connected to OBS WebSocket successfully')
             
         except Exception as e:
-            self.logger.error(f'Connection failed: {e}')
-            sys.exit(1)
+            self.logger.error(f'OBS connection failed: {e}')
+            raise
     
     async def disconnect(self):
         if self.ws:
@@ -47,7 +47,7 @@ class OBSRecordingController(QObject):
             
             if not rec_response.ok():
                 self.logger.error('Failed to get recording status')
-                sys.exit(1)
+                raise
 
             if not rec_response.responseData['outputActive']:
                 start_rec_req = Request('StartRecord')
@@ -57,13 +57,13 @@ class OBSRecordingController(QObject):
                     self.logger.info('Recording started sucessfully')
                 else:
                     self.logger.error(f'Failed to start recording: {e}')
-                    sys.exit(1)
+                    raise
             else:
                 self.logger.warning('Recording already in progress')
                 
         except Exception as e:
             self.logger.error(f'Failed to start recording: {e}')
-            sys.exit(1)
+            raise
             
     async def stop_recording(self):
         await self.establish_connection()
@@ -74,7 +74,7 @@ class OBSRecordingController(QObject):
             
             if not rec_response.ok():
                 self.logger.error('Failed to get recording status')
-                sys.exit(1)
+                raise
             
             if rec_response.responseData['outputActive']:
                 stop_rec_req = Request('StopRecord')
@@ -84,13 +84,13 @@ class OBSRecordingController(QObject):
                     self.logger.info('Recording stopped sucessfully')
                 else:
                     self.logger.error(f'Failed to stop recording: {e}')
-                    sys.exit(1)
+                    raise
             else:
                 self.logger.warning('No active recording')
             
         except Exception as e:
             self.logger.error(f'Failed to stop recording: {e}')
-            sys.exit(1)
+            raise
             
     async def start_replay_buffer(self):
         await self.establish_connection()
@@ -101,7 +101,7 @@ class OBSRecordingController(QObject):
             
             if not replay_response.ok():
                 self.logger.error('Failed to get replay status')
-                sys.exit(1)
+                raise
                 
             if replay_response.responseData['outputActive']:
                 start_replay_req = Request('StartReplayBuffer')
@@ -111,13 +111,13 @@ class OBSRecordingController(QObject):
                     self.logger.info('Replay buffer started successfully')
                 else:
                     self.logger.error(f'Failed to start replay buffer: {e}')
-                    sys.exit(1)
+                    raise
             else:
                 self.logger.warning('Replay buffer already active')
             
         except Exception as e:
             self.logger.error(f'Failed to start replay buffer: {e}')
-            sys.exit(1)
+            raise
             
     async def stop_replay_buffer(self):
         await self.establish_connection()
@@ -128,7 +128,7 @@ class OBSRecordingController(QObject):
             
             if not replay_response.ok():
                 self.logger.error('Failed to get replay status')
-                sys.exit(1)
+                raise
                 
             if replay_response.responseData['outputActive']:
                 stop_replay_req = Request('StopReplayBuffer')
@@ -138,13 +138,13 @@ class OBSRecordingController(QObject):
                     self.logger.info('Replay buffer stopped successfully')
                 else:
                     self.logger.error(f'Failed to stop replay buffer: {e}')
-                    sys.exit(1)
+                    raise
             else:
                 self.logger.warning('Replay buffer not active')
             
         except Exception as e:
             self.logger.error(f'Failed to stop replay buffer: {e}')
-            sys.exit(1)
+            raise
         
     async def save_replay_buffer(self):
         await self.establish_connection()
@@ -155,7 +155,7 @@ class OBSRecordingController(QObject):
             print(replay_response)
             if not replay_response.ok():
                 self.logger.error('Failed to get replay status')
-                sys.exit(1)
+                raise
                 
             if replay_response.responseData['outputActive']:
                 save_replay_req = Request('SaveReplayBuffer')
@@ -165,10 +165,10 @@ class OBSRecordingController(QObject):
                     self.logger.info('Replay buffer saved successfully')
                 else:
                     self.logger.error(f'Failed to save replay buffer: {e}')
-                    sys.exit(1)
+                    raise
             else:
                 self.logger.warning('Replay buffer already saving')
             
         except Exception as e:
             self.logger.error(f'Failed to save replay buffer: {e}')
-            sys.exit(1)
+            raise
