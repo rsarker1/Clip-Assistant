@@ -10,7 +10,6 @@ from PySide6.QtGui import QIcon
 from PySide6.QtCore import QThread, Signal, Slot
 from settings_window import SettingsWindow
 
-
 class VoiceRecognizerThread(QThread):
     error_occured = Signal(str)
     
@@ -99,13 +98,28 @@ class Freya_for_OBS:
         
     def show_settings(self):
         self.settings_window = SettingsWindow()
-        self.settings_window.settings_updated.connect(self.save_settings)
+        self.settings_window.obs_settings_updated.connect(self.update_obs_settings)
+        self.settings_window.general_settings_updated.connect(self.update_general_settings)
         self.settings_window.show()
     
     @Slot(str, int, str)
-    def save_settings(self, host, port, password):
+    def update_obs_settings(self, host, port, password):
         self.logger.info('Settings updated. Attempting to kill curent thread...')
         self.kill_thread()
+        
+        new_config = {
+            'host': host,
+            'port': port,
+            'password': password
+        }
+        save_config(new_config)
+        
+        self.logger.info('Restarting voice control with new settings...')
+        self.setup_voice_control()
+        
+    @Slot(int, bool)
+    def update_general_settings(self, notif, startup):
+        self.logger.info('General settings updated')
         
         new_config = {
             'host': host,

@@ -1,44 +1,89 @@
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
+from enum import Enum
+
+from PySide6.QtWidgets import ( 
+    QWidget, QVBoxLayout, QFormLayout, QLabel, QLineEdit, 
+    QPushButton, QTabWidget, QComboBox, QCheckBox 
+)
+from PySide6.QtGui import QIcon, QGuiApplication
 from PySide6.QtCore import Signal
 
 class SettingsWindow(QWidget):
-    settings_updated = Signal(str, int, str)
+    obs_settings_updated = Signal(str, int, str)
+    general_settings_updated = Signal(int, bool)
     
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Settings')
-        self.setFixedSize(300, 250)
+        self.setWindowIcon(QIcon('./icons/settings.png'))
+        self.setMinimumSize(400, 300)
+        self.setMaximumSize(600, 400)
         
-        layout = QVBoxLayout()
+        # screen_geometry = QGuiApplication.primaryScreen().availableGeometry()
+        # x = screen_geometry.center().x() - self.width() // 2
+        # y = screen_geometry.center().y() - self.height() // 2
+        # self.move(200, 200)
+        
+        self.tabs = QTabWidget(self)
+        self.setup_general_tab()
+        self.setup_OBS_tab()
+        
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(self.tabs)
+        
+        self.setLayout(main_layout)
+        
+    def setup_general_tab(self):
+        general_tab = QWidget()
+        general_layout = QFormLayout()
+        
+        general_layout.addRow(QLabel('Select Notification Type:'))
+        self.notif_dropdown = QComboBox()
+        self.notif_dropdown.addItems(['TTS', 'System Tray', 'None'])
+        general_layout.addRow(self.notif_dropdown)
+        
+        general_layout.addRow(QLabel(''))
+        
+        self.startup_checkbox = QCheckBox('Run on startup')
+        general_layout.addRow(self.startup_checkbox)
+        
+        general_tab.setLayout(general_layout)
+        self.tabs.addTab(general_tab, 'General')
+        
+    def setup_OBS_tab(self):    
+        obs_tab = QWidget()
+        obs_layout = QVBoxLayout()
         
         self.host_input = QLineEdit()
         self.port_input = QLineEdit()
         self.password_input = QLineEdit()
         self.password_input.setEchoMode(QLineEdit.EchoMode.Password)
         
-        layout.addWidget(QLabel('Host:'))
-        layout.addWidget(self.host_input)
-        layout.addWidget(QLabel('Port:'))
-        layout.addWidget(self.port_input)
-        layout.addWidget(QLabel('Password:'))
-        layout.addWidget(self.password_input)
+        obs_layout.addWidget(QLabel('Host:'))
+        obs_layout.addWidget(self.host_input)
+        obs_layout.addWidget(QLabel('Port:'))
+        obs_layout.addWidget(self.port_input)
+        obs_layout.addWidget(QLabel('Password:'))
+        obs_layout.addWidget(self.password_input)
         
         self.error_label = QLabel('')
         self.error_label.setStyleSheet('color: red')
-        layout.addWidget(self.error_label)
+        obs_layout.addWidget(self.error_label)
         
         save_button = QPushButton('Save')
-        save_button.clicked.connect(self.save_settings)
-        layout.addWidget(save_button)
+        save_button.clicked.connect(self.save_obs_settings)
+        obs_layout.addWidget(save_button)
         
-        self.setLayout(layout)
+        obs_tab.setLayout(obs_layout)
+        self.tabs.addTab(obs_tab, 'OBS')
         
-    def save_settings(self):
+    def save_obs_settings(self):
         self.error_label.setText('')
         
         host = self.host_input.text().strip()
         port = self.port_input.text().strip()
         password = self.password_input.text().strip()
+        notif = self.notif_dropdown.currentIndex()
+        startup = self.startup_checkbox.isChecked()
             
         if not host or not port or not password:
             self.error_label.setText('Error: Empty text not allowed')
@@ -50,5 +95,12 @@ class SettingsWindow(QWidget):
             self.error_label.setText('Error: Port must be an integer')
             return
         
-        self.settings_updated.emit(host, port, password)
+        self.obs_settings_updated.emit(host, port, password, notif, startup)
         self.close()
+        
+    def save_general_settings(self):
+        notif = self.notif_dropdown.currentIndex()
+        startup = self.startup_checkbox.isChecked()
+        
+        print(notif)
+        self.general_settings_updated.emit(notif, startup)

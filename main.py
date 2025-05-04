@@ -3,10 +3,6 @@ import logging
 import sys
 from datetime import datetime
 from freya_app import Freya_for_OBS
-
-from voice_recognizer import VoskVoiceRecognizer
-from obs_controller import OBSRecordingController
-from yaml_config import load_config
         
 def setup_logging():
     log_file = logging.getLogger(__name__)
