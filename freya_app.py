@@ -1,7 +1,7 @@
 import sys
 import logging
 import asyncio
-from yaml_config import load_config, save_config
+from yaml_config import load_config, save_config, get_config
 from obs_controller import OBSRecordingController
 from voice_recognizer import VoskVoiceRecognizer
 
@@ -107,12 +107,12 @@ class Freya_for_OBS:
         self.logger.info('Settings updated. Attempting to kill curent thread...')
         self.kill_thread()
         
-        new_config = {
+        changes = {
             'host': host,
             'port': port,
             'password': password
         }
-        save_config(new_config)
+        save_config(get_config(), changes)
         
         self.logger.info('Restarting voice control with new settings...')
         self.setup_voice_control()
@@ -121,15 +121,11 @@ class Freya_for_OBS:
     def update_general_settings(self, notif, startup):
         self.logger.info('General settings updated')
         
-        new_config = {
-            'host': host,
-            'port': port,
-            'password': password
+        changes = {
+            'notifications': notif,
+            'startup': startup
         }
-        save_config(new_config)
-        
-        self.logger.info('Restarting voice control with new settings...')
-        self.setup_voice_control()
+        save_config(get_config(), changes)
         
     @Slot(str)
     def show_error_message(self, msg):

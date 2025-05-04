@@ -5,7 +5,7 @@ from queue import Queue, Empty
 import sounddevice as sd
 from vosk import Model, KaldiRecognizer
 
-from PySide6.QtCore import QObject
+from PySide6.QtCore import QObject, Signal
 
 VOSK_MODEL_PATH = './model'           
 
@@ -19,6 +19,8 @@ class Phrases(Enum):
     CLIP_PHRASE = ['freya clip it', 'freya clip that']
 
 class VoskVoiceRecognizer(QObject):
+    command_successful = Signal(str)
+    
     def __init__(self, obs_controller):
         super().__init__()
         self.logger = logging.getLogger(__name__)
@@ -92,6 +94,7 @@ class VoskVoiceRecognizer(QObject):
             self.logger.info('CLIP_PHRASE found')
             try:
                 await self.obs_controller.save_replay_buffer()
+                self.command_successful.emit('Clipping')
             except Exception as e:
                 raise
         
