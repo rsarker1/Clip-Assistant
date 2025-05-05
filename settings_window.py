@@ -1,15 +1,16 @@
+from yaml_config import get_config
 from enums import Options
 
 from PySide6.QtWidgets import ( 
     QWidget, QVBoxLayout, QFormLayout, QLabel, QLineEdit, 
     QPushButton, QTabWidget, QComboBox, QCheckBox 
 )
-from PySide6.QtGui import QIcon, QGuiApplication
+from PySide6.QtGui import QIcon
 from PySide6.QtCore import Signal
 
 class SettingsWindow(QWidget):
     obs_settings_updated = Signal(str, int, str)
-    general_settings_updated = Signal(int, bool)
+    general_settings_updated = Signal(str, bool)
     
     def __init__(self):
         super().__init__()
@@ -18,10 +19,7 @@ class SettingsWindow(QWidget):
         self.setMinimumSize(400, 300)
         self.setMaximumSize(600, 400)
         
-        # screen_geometry = QGuiApplication.primaryScreen().availableGeometry()
-        # x = screen_geometry.center().x() - self.width() // 2
-        # y = screen_geometry.center().y() - self.height() // 2
-        # self.move(200, 200)
+        self.config = get_config()
         
         self.tabs = QTabWidget(self)
         self.setup_general_tab()
@@ -35,15 +33,20 @@ class SettingsWindow(QWidget):
     def setup_general_tab(self):
         general_tab = QWidget()
         general_layout = QFormLayout()
+        options = [Options.TTS_OPTION.value, Options.TRAY_OPTION.value, Options.NONE_OPTION.value]
         
         general_layout.addRow(QLabel('Select Notification Type:'))
         self.notif_dropdown = QComboBox()
-        self.notif_dropdown.addItems([Options.TTS_OPTION.value, Options.TRAY_OPTION.value, Options.NONE_OPTION.value])
+        self.notif_dropdown.addItems(options)
+        self.notif_dropdown.setCurrentIndex(options.index(self.config.get('notifications')))
+        self.notif_dropdown.currentIndexChanged.connect(self.save_general_settings)
         general_layout.addRow(self.notif_dropdown)
         
         general_layout.addRow(QLabel(''))
         
         self.startup_checkbox = QCheckBox('Run on startup')
+        self.startup_checkbox.setChecked(self.config.get('startup'))
+        self.startup_checkbox.stateChanged.connect(self.save_general_settings)
         general_layout.addRow(self.startup_checkbox)
         
         general_tab.setLayout(general_layout)
@@ -100,5 +103,4 @@ class SettingsWindow(QWidget):
         notif = self.notif_dropdown.currentText()
         startup = self.startup_checkbox.isChecked()
         
-        print(notif)
         self.general_settings_updated.emit(notif, startup)

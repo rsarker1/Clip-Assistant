@@ -19,6 +19,7 @@ class Freya_for_OBS:
         self.logger = logging.getLogger(__name__)
         
         self.app = QApplication()
+        self.app.setWindowIcon(QIcon('./icons/icon.png'))
         self.app.setQuitOnLastWindowClosed(False)
         
         self.setup_tray()
@@ -63,7 +64,7 @@ class Freya_for_OBS:
     
     @Slot(str, int, str)
     def update_obs_settings(self, host, port, password):
-        self.logger.info('Settings updated. Attempting to kill curent thread...')
+        self.logger.info('OBS settings updated. Attempting to kill curent thread...')
         self.kill_thread()
         
         changes = {

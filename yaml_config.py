@@ -43,7 +43,7 @@ def load_config():
 def save_config(config, updates=None):
     logger.info('Config saved')
     if updates:
-        for key, val in updates:
+        for key, val in updates.items():
             config[key] = val
 
     with open(FILE_NAME, 'w') as file:
