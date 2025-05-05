@@ -9,7 +9,7 @@ DEFAULT_CONFIG = {
     'host': 'localhost',
     'port': 4455,
     'password': 'password',
-    'notifications': 0,
+    'notifications': 'TTS',
     'startup': False
 }
 

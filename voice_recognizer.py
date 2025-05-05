@@ -1,22 +1,14 @@
 import logging
 import json
-from enum import Enum
-from queue import Queue, Empty
 import sounddevice as sd
+from queue import Queue, Empty
 from vosk import Model, KaldiRecognizer
+
+from enums import Phrases
 
 from PySide6.QtCore import QObject, Signal
 
 VOSK_MODEL_PATH = './model'           
-
-class Phrases(Enum):
-    START_REC_PHRASE = 'freya start recording'
-    STOP_REC_PHRASE = 'freya stop recording'
-    START_REPLAY_PHRASE = 'freya start the replay'
-    STOP_REPLAY_PHRASE = 'freya stop the replay'
-    START_EVERYTHING_PHRASE = 'freya start everything'
-    STOP_EVERYTHING_PHRASE = 'freya stop everything'
-    CLIP_PHRASE = ['freya clip it', 'freya clip that']
 
 class VoskVoiceRecognizer(QObject):
     command_successful = Signal(str)
@@ -40,29 +32,29 @@ class VoskVoiceRecognizer(QObject):
         self.obs_controller = obs_controller
         
         self.commands = {
-            Phrases.START_REC_PHRASE.value: (
-                'START_REC_PHRASE found',
+            Phrases.START_REC_PHRASE: (
+                'Starting recording',
                 [lambda: self.obs_controller.start_recording()]
             ),
-            Phrases.STOP_REC_PHRASE.value: (
-                'STOP_REC_PHRASE found', 
+            Phrases.STOP_REC_PHRASE: (
+                'Stopping recording', 
                 [lambda: self.obs_controller.stop_recording()]
             ),
-            Phrases.START_REPLAY_PHRASE.value: (
-                'START_REPLAY_PHRASE found', 
+            Phrases.START_REPLAY_PHRASE: (
+                'Starting replay', 
                 [lambda: self.obs_controller.start_replay_buffer()]
             ),
-            Phrases.STOP_REPLAY_PHRASE.value: (
-                'STOP_REPLAY_PHRASE found', 
+            Phrases.STOP_REPLAY_PHRASE: (
+                'Stopping replay', 
                 [lambda: self.obs_controller.stop_replay_buffer()]
             ),
-            Phrases.START_EVERYTHING_PHRASE.value: (
-                'START_EVERYTHING_PHRASE found', 
+            Phrases.START_EVERYTHING_PHRASE: (
+                'Starting all', 
                 [lambda: self.obs_controller.start_recording(),
                 lambda: self.obs_controller.start_replay_buffer()]
             ),
-            Phrases.STOP_EVERYTHING_PHRASE.value: (
-                'STOP_EVERYTHING_PHRASE found', 
+            Phrases.STOP_EVERYTHING_PHRASE: (
+                'Stopping all', 
                 [lambda: self.obs_controller.stop_recording(),
                 lambda: self.obs_controller.stop_replay_buffer()]
             ),
@@ -99,12 +91,13 @@ class VoskVoiceRecognizer(QObject):
                 raise
         
         # If not a multi phrase command, run through here
-        for phrase_key, (log_info, phrase_commands) in self.commands.items():
-            if phrase_key in text:
-                self.logger.info(log_info)
+        for phrase_key, (response, phrase_commands) in self.commands.items():
+            if phrase_key.value in text:
+                self.logger.info(f'{phrase_key.name} found')
                 for func in phrase_commands:
                     try:
                         await func()
+                        self.command_successful.emit(response)
                     except Exception as e:
                         raise
                     

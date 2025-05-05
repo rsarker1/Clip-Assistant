@@ -1,4 +1,4 @@
-from enum import Enum
+from enums import Options
 
 from PySide6.QtWidgets import ( 
     QWidget, QVBoxLayout, QFormLayout, QLabel, QLineEdit, 
@@ -38,7 +38,7 @@ class SettingsWindow(QWidget):
         
         general_layout.addRow(QLabel('Select Notification Type:'))
         self.notif_dropdown = QComboBox()
-        self.notif_dropdown.addItems(['TTS', 'System Tray', 'None'])
+        self.notif_dropdown.addItems([Options.TTS_OPTION.value, Options.TRAY_OPTION.value, Options.NONE_OPTION.value])
         general_layout.addRow(self.notif_dropdown)
         
         general_layout.addRow(QLabel(''))
@@ -82,8 +82,6 @@ class SettingsWindow(QWidget):
         host = self.host_input.text().strip()
         port = self.port_input.text().strip()
         password = self.password_input.text().strip()
-        notif = self.notif_dropdown.currentIndex()
-        startup = self.startup_checkbox.isChecked()
             
         if not host or not port or not password:
             self.error_label.setText('Error: Empty text not allowed')
@@ -95,11 +93,11 @@ class SettingsWindow(QWidget):
             self.error_label.setText('Error: Port must be an integer')
             return
         
-        self.obs_settings_updated.emit(host, port, password, notif, startup)
+        self.obs_settings_updated.emit(host, port, password)
         self.close()
         
     def save_general_settings(self):
-        notif = self.notif_dropdown.currentIndex()
+        notif = self.notif_dropdown.currentText()
         startup = self.startup_checkbox.isChecked()
         
         print(notif)
