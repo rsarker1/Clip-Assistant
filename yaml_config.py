@@ -14,12 +14,10 @@ DEFAULT_CONFIG = {
 }
 
 def is_valid_config(config):
-    required_keys = DEFAULT_CONFIG.keys()
-    
-    for required in required_keys:
-        if config.get(required) == None:
+    for key, value in DEFAULT_CONFIG.items():
+        if config.get(key) == None or not type(value) is type(config.get(key)):
             return False
-           
+              
     return True
 
 def load_config():
@@ -32,10 +30,13 @@ def load_config():
             if is_valid_config(config):
                 logger.info('Existing config valid')
             else:
-                logger.warning('Existing config invalid. Most likely will not connect to OBS.')
+                logger.warning('Existing config invalid. Creating default config instead...')
+                config = DEFAULT_CONFIG
+                save_config(config)
     else:
         logger.info('Config does not exist. Generating...')
-        save_config(DEFAULT_CONFIG)
+        config = DEFAULT_CONFIG
+        save_config(config)
             
     logger.info('Config loaded correctly')
     return config
