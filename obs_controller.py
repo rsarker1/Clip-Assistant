@@ -46,8 +46,7 @@ class OBSRecordingController(QObject):
             rec_response = await self.ws.call(rec_request)
             
             if not rec_response.ok():
-                self.logger.error('Failed to get recording status')
-                raise
+                raise Exception('Could not get recording status')
 
             if not rec_response.responseData['outputActive']:
                 start_rec_req = Request('StartRecord')
@@ -56,8 +55,7 @@ class OBSRecordingController(QObject):
                 if start_rec_res.ok():
                     self.logger.info('Recording started sucessfully')
                 else:
-                    self.logger.error(f'Failed to start recording: {e}')
-                    raise
+                    raise Exception('Could not start recording')
             else:
                 self.logger.warning('Recording already in progress')
                 
@@ -73,8 +71,7 @@ class OBSRecordingController(QObject):
             rec_response = await self.ws.call(rec_request)
             
             if not rec_response.ok():
-                self.logger.error('Failed to get recording status')
-                raise
+                raise Exception('Could not get recording status')
             
             if rec_response.responseData['outputActive']:
                 stop_rec_req = Request('StopRecord')
@@ -83,8 +80,7 @@ class OBSRecordingController(QObject):
                 if stop_rec_res.ok():
                     self.logger.info('Recording stopped sucessfully')
                 else:
-                    self.logger.error(f'Failed to stop recording: {e}')
-                    raise
+                    raise Exception('Could not stop recording')
             else:
                 self.logger.warning('No active recording')
             
@@ -100,18 +96,16 @@ class OBSRecordingController(QObject):
             replay_response = await self.ws.call(replay_request)
             
             if not replay_response.ok():
-                self.logger.error('Failed to get replay status')
-                raise
+                raise Exception('Could not get replay status')
                 
-            if replay_response.responseData['outputActive']:
+            if not replay_response.responseData['outputActive']:
                 start_replay_req = Request('StartReplayBuffer')
                 start_replay_res = await self.ws.call(start_replay_req)
                 
                 if start_replay_res.ok():
                     self.logger.info('Replay buffer started successfully')
                 else:
-                    self.logger.error(f'Failed to start replay buffer: {e}')
-                    raise
+                    raise Exception('Could not start replay buffer')
             else:
                 self.logger.warning('Replay buffer already active')
             
@@ -127,8 +121,7 @@ class OBSRecordingController(QObject):
             replay_response = await self.ws.call(replay_request)
             
             if not replay_response.ok():
-                self.logger.error('Failed to get replay status')
-                raise
+                raise Exception('Could not get replay status')
                 
             if replay_response.responseData['outputActive']:
                 stop_replay_req = Request('StopReplayBuffer')
@@ -137,8 +130,7 @@ class OBSRecordingController(QObject):
                 if stop_replay_res.ok():
                     self.logger.info('Replay buffer stopped successfully')
                 else:
-                    self.logger.error(f'Failed to stop replay buffer: {e}')
-                    raise
+                    raise Exception('Could not stop replay buffer')
             else:
                 self.logger.warning('Replay buffer not active')
             
@@ -152,10 +144,8 @@ class OBSRecordingController(QObject):
         try:
             replay_request = Request('GetReplayBufferStatus')
             replay_response = await self.ws.call(replay_request)
-            print(replay_response)
             if not replay_response.ok():
-                self.logger.error('Failed to get replay status')
-                raise
+                raise Exception('Could not get replay status') 
                 
             if replay_response.responseData['outputActive']:
                 save_replay_req = Request('SaveReplayBuffer')
@@ -164,8 +154,7 @@ class OBSRecordingController(QObject):
                 if save_replay_res.ok():
                     self.logger.info('Replay buffer saved successfully')
                 else:
-                    self.logger.error(f'Failed to save replay buffer: {e}')
-                    raise
+                    raise Exception('Could not save replay buffer')
             else:
                 self.logger.warning('Replay buffer already saving')
             
