@@ -89,17 +89,20 @@ class VoskVoiceRecognizer(QObject):
                 self.command_successful.emit('Clipping')
             except Exception as e:
                 raise
-        
-        # If not a multi phrase command, run through here
-        for phrase_key, (response, phrase_commands) in self.commands.items():
-            if phrase_key.value in text:
-                self.logger.info(f'{phrase_key.name} found')
-                for func in phrase_commands:
-                    try:
-                        await func()
-                        self.command_successful.emit(response)
-                    except Exception as e:
-                        raise
+        else:
+            # If not a multi phrase command, run through here
+            for phrase_key, (response, phrase_commands) in self.commands.items():
+                if phrase_key.value in text:
+                    signal_emitted = False
+                    self.logger.info(f'{phrase_key.name} found')
+                    for func in phrase_commands:
+                        try:
+                            await func()
+                            if not signal_emitted:
+                                self.command_successful.emit(response)
+                                signal_emitted = True
+                        except Exception as e:
+                            raise
                     
     def voice_callback(self, indata, frames, time, status):
         if status:
