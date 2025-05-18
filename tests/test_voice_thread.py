@@ -1,7 +1,7 @@
 import asyncio
 import pytest
-from PySide6.QtWidgets import QWidget
 from voice_thread import VoiceRecognizerThread
+from PySide6.QtWidgets import QWidget
 
 class DummyRecognizer:
     def __init__(self):
