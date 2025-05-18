@@ -3,12 +3,12 @@ import json
 import sounddevice as sd
 from queue import Queue, Empty
 from vosk import Model, KaldiRecognizer
-
+from rel_path import resource_path
 from enums import Phrases
 
 from PySide6.QtCore import QObject, Signal
 
-VOSK_MODEL_PATH = './model'           
+VOSK_MODEL_PATH = resource_path('./model')          
 
 class VoskVoiceRecognizer(QObject):
     command_successful = Signal(str)

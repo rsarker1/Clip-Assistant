@@ -8,6 +8,7 @@ from obs_controller import OBSRecordingController
 from voice_recognizer import VoskVoiceRecognizer
 from voice_thread import VoiceRecognizerThread
 from enums import Options
+from rel_path import resource_path
 
 from PySide6.QtWidgets import QApplication, QSystemTrayIcon, QMenu, QMessageBox
 from PySide6.QtGui import QIcon
@@ -19,7 +20,7 @@ class Freya_for_OBS:
         self.logger = logging.getLogger(__name__)
         
         self.app = QApplication()
-        self.app.setWindowIcon(QIcon('./icons/icon.png'))
+        self.app.setWindowIcon(QIcon(resource_path('./icons/icon.png')))
         self.app.setQuitOnLastWindowClosed(False)
         
         self.setup_tray()
@@ -36,7 +37,7 @@ class Freya_for_OBS:
         self.exit_action = self.tray_menu.addAction('Exit')
         self.exit_action.triggered.connect(self.exit)
         
-        self.tray_icon = QSystemTrayIcon(QIcon('./icons/mic.png'), self.app)
+        self.tray_icon = QSystemTrayIcon(QIcon(resource_path('./icons/mic.png')), self.app)
         self.tray_icon.setContextMenu(self.tray_menu)
         
         self.tray_icon.show()

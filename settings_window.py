@@ -1,5 +1,6 @@
 from yaml_config import get_config
 from enums import Options
+from rel_path import resource_path
 
 from PySide6.QtWidgets import ( 
     QWidget, QVBoxLayout, QFormLayout, QLabel, QLineEdit, 
@@ -15,7 +16,7 @@ class SettingsWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Settings')
-        self.setWindowIcon(QIcon('./icons/settings.png'))
+        self.setWindowIcon(QIcon(resource_path('./icons/settings.png')))
         self.setMinimumSize(400, 300)
         self.setMaximumSize(600, 400)
         
