@@ -4,5 +4,3 @@ config.yaml
 
 build
 dist
-lib
-model
