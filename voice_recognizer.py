@@ -79,8 +79,8 @@ class VoskVoiceRecognizer(QObject):
         self.logger.info('Ceased audio processing')
            
     async def phrase_handler(self, text):
-        if text: 
-            self.logger.info(f'Recognized: {text}')
+        # if text: 
+        #     self.logger.info(f'Recognized: {text}')
         
         if any(phrase in text for phrase in Phrases.CLIP_PHRASE.value):
             self.logger.info('CLIP_PHRASE found')

@@ -33,21 +33,23 @@ This application runs in your system tray and listens for voice commands to cont
 
 ### End‑User Installation
 
-1. Download the latest release from [Releases](https://github.com/\<username\>/\<repo\>/releases).  
+1. Download the latest release from [Releases](https://github.com/rsarker1/Clip-Assistant/releases/tag/1.0.0).  
 2. Double‑click **`Freya.exe`**.  
 3. The app will launch — no further setup required!
 
 ### Developer Installation 
 
-1. **Install dependencies**:
+1. **Clone the repo**
    ```bash
-   pip install vosk simpleobsws PyQt6 pyttsx3 sounddevice
+   git clone git@github.com:rsarker1/Clip-Assistant.git
    ```
-
-2. **Download a Vosk model**:
+2. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. **Download a Vosk model**:
    - Get a model from https://alphacephei.com/vosk/models
    - Extract to a folder named "model" in the same directory as the application
-
 
 3. **Configure OBS**:
    - Enable WebSocket server in OBS (Tools → WebSocket Server Settings)
@@ -83,7 +85,7 @@ This application runs in your system tray and listens for voice commands to cont
 
 - **No audio detection**: Verify microphone settings. The application will use your primary microphone for input. 
 - **OBS connection issues**: Ensure OBS is running and WebSocket is enabled
-- **Voice commands not recognized**: Try adjusting your microphone
+- **Voice commands not recognized**: Try adjusting your microphone or enunciating "Freya" a bit more. The Vosk model is a bit specific. 
 
 ## Future Features
 

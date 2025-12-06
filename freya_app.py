@@ -92,8 +92,12 @@ class Freya_for_OBS:
     def activate_notification(self, msg):
         check_notif = get_config().get('notifications')
         if check_notif == Options.TTS_OPTION.value:
+            # TTS engine is dumb
+            self.tts_engine = pyttsx3.init()
             self.tts_engine.say(msg)
             self.tts_engine.runAndWait()
+            self.tts_engine.stop()
+            del self.tts_engine
         elif check_notif == Options.TRAY_OPTION.value:
             self.tray_icon.showMessage(
                 'Running command...',
