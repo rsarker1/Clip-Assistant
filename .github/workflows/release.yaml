@@ -1,0 +1,41 @@
+name: Release and Deployment
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  prepare-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Clean Tag Name
+        id: clean_version
+        run: |
+          VERSION_TAG=${{ github.ref_name }}
+          VERSION_CLEAN=${VERSION_TAG:1} 
+          echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_OUTPUT
+          echo "VERSION_CLEAN=$VERSION_CLEAN" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Download Artifact from Latest Run
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          name: freya-${{ steps.clean_version.outputs.VERSION_CLEAN }}
+          path: release_files 
+          github_token: ${{ secrets.GITHUB_TOKEN }} 
+          workflow: build-exe.yaml 
+
+      - name: Create Release and Upload Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.clean_version.outputs.VERSION_TAG }}
+          name: Freya App Release ${{ steps.clean_version.outputs.VERSION_TAG }}
+          body: |
+            🎉 Official Release for Freya App - Version ${{ steps.clean_version.outputs.VERSION_CLEAN }}
+            
+            This release contains the final standalone Windows executable: freya-${{ steps.clean_version.outputs.VERSION_CLEAN }}.exe
+          files: release_files/*.exe
+          draft: false
+          prerelease: false

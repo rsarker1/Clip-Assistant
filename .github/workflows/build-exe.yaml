@@ -9,10 +9,23 @@ on:
 jobs:
   build-windows-exe:
     runs-on: windows-latest 
+    outputs:
+        version_name: ${{ steps.get_version.outputs.VERSION_CLEAN }}
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get Latest Tag Version
+        id: get_version
+        run: |
+          $latestTag = git describe --tags --abbrev=0 2>$null
+          if (-not $latestTag) { $latestTag = "v0.0.0" }
+          $versionClean = $latestTag.TrimStart("v")
+          echo "VERSION_CLEAN=$versionClean" >> $env:GITHUB_OUTPUT
+        shell: powershell
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -40,5 +53,6 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: freya
+          name: freya-${{ steps.get_version.outputs.VERSION_CLEAN }}
           path: dist/*.exe 
+    
