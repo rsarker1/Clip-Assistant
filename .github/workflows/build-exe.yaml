@@ -14,7 +14,7 @@ permissions:
 jobs:
   build-windows-exe:
     runs-on: windows-latest 
-
+      
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -70,9 +70,9 @@ jobs:
           files: dist/*.exe
           name: App Release ${{ github.ref_name }}
           body: |
-            🎉 Official Release for Freya App - Version ${{ steps.version_info.outputs.VERSION_CLEAN }}
+            🎉 Official Release for Freya App - Version ${{ steps.version_step.outputs.VERSION_CLEAN }}
             
-            This release contains the final standalone Windows executable: freya-${{ steps.version_info.outputs.VERSION_CLEAN }}.exe
+            This release contains the final standalone Windows executable: freya-${{ steps.version_step.outputs.VERSION_CLEAN }}.exe
           draft: false
           prerelease: false
         env:
