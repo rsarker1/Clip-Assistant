@@ -1,9 +1,11 @@
-name: Build Freya Windows Executable
+name: Build and Release
 
 on:
   push:
     branches:
       - main 
+    tags:
+      - 'v*.*.*'
   workflow_dispatch: 
 
 jobs:
@@ -14,8 +16,20 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Log Commit SHA
-        run: echo "Building commit ${{ github.sha }}"
+      - name: Determine Version
+        id: version_step
+        run: |
+          $version = "${{ github.sha }}"
+          $isTag = $false
+
+          if ("${{ github.ref_type }}" -eq "tag") {
+            $version = "${{ github.ref_name }}".TrimStart("v")
+            $isTag = $true
+          }
+          
+          echo "VERSION_CLEAN=$version" >> $env:GITHUB_OUTPUT
+          echo "IS_TAG=$isTag" >> $env:GITHUB_OUTPUT
+        shell: powershell
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -46,3 +60,17 @@ jobs:
           name: freya-${{ github.sha }}
           path: dist/*.exe 
     
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*.exe
+          name: App Release ${{ github.ref_name }}
+          body: |
+            🎉 Official Release for Freya App - Version ${{ steps.version_info.outputs.VERSION_CLEAN }}
+            
+            This release contains the final standalone Windows executable: freya-${{ steps.version_info.outputs.VERSION_CLEAN }}.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
