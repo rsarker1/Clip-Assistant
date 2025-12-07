@@ -21,8 +21,14 @@ jobs:
       - name: Get Latest Tag Version
         id: get_version
         run: |
-          $latestTag = git describe --tags --abbrev=0 2>$null
+          $latestTag = ""
           
+          try {
+            $latestTag = git describe --tags --abbrev=0 2>$null -ErrorAction Stop
+          } catch {
+            Write-Host "INFO: 'git describe' failed (expected if no tags exist). Setting default version."
+          }
+        
           if ([string]::IsNullOrEmpty($latestTag)) { 
             $latestTag = "v0.0.0"
             Write-Host "No tags found. Defaulting version to: v0.0.0"
@@ -31,9 +37,8 @@ jobs:
           }
           
           $versionClean = $latestTag.TrimStart("v")
-          
           echo "VERSION_CLEAN=$versionClean" >> $env:GITHUB_OUTPUT
-          Write-Host "Using Version: $versionClean"
+          Write-Host "Using Clean Version: $versionClean"
         shell: powershell
 
       - name: Set up Python
