@@ -9,37 +9,10 @@ on:
 jobs:
   build-windows-exe:
     runs-on: windows-latest 
-    outputs:
-        version_name: ${{ steps.get_version.outputs.VERSION_CLEAN }}
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Get Latest Tag Version
-        id: get_version
-        run: |
-          $latestTag = ""
-          
-          try {
-            $latestTag = git describe --tags --abbrev=0 2>$null -ErrorAction Stop
-          } catch {
-            Write-Host "INFO: 'git describe' failed (expected if no tags exist). Setting default version."
-          }
-        
-          if ([string]::IsNullOrEmpty($latestTag)) { 
-            $latestTag = "v0.0.0"
-            Write-Host "No tags found. Defaulting version to: v0.0.0"
-          } else {
-            Write-Host "Found tag: $latestTag"
-          }
-          
-          $versionClean = $latestTag.TrimStart("v")
-          echo "VERSION_CLEAN=$versionClean" >> $env:GITHUB_OUTPUT
-          Write-Host "Using Clean Version: $versionClean"
-        shell: powershell
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -67,6 +40,6 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: freya-${{ steps.get_version.outputs.VERSION_CLEAN }}
+          name: freya
           path: dist/*.exe 
     
