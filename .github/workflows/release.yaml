@@ -3,7 +3,7 @@ name: Release and Deployment
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*'
 
 jobs:
   prepare-release:
@@ -13,7 +13,7 @@ jobs:
       - name: Extract Version and SHA
         id: version_info
         run: |
-          VERSION_TAG=${{ github.ref_name }}
+          VERSION_TAG=${{ github.ref }}
           VERSION_CLEAN=${VERSION_TAG:1} 
           COMMIT_SHA=${{ github.sha }}
           
@@ -23,13 +23,10 @@ jobs:
         shell: bash
 
       - name: Download Artifact from Latest Build
-        uses: dawidd6/action-download-artifact@v3
+        uses: actions/download-artifact@v5
         with:
           name: freya-${{ steps.version_info.outputs.COMMIT_SHA }}
-          path: release_files 
-          github_token: ${{ secrets.GITHUB_TOKEN }} 
-          workflow: build-exe.yml
-          commit: ${{ steps.version_info.outputs.COMMIT_SHA }} 
+          path: dist/*.exe 
 
       - name: Rename Executable for Release
         run: |
