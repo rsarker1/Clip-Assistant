@@ -21,10 +21,17 @@ jobs:
       - name: Get Latest Tag Version
         id: get_version
         run: |
-          $latestTag = git describe --tags --abbrev=0 2>$null
-          if (-not $latestTag) { $latestTag = "v0.0.0" }
+          $latestTag = git describe --tags --abbrev=0 -ErrorAction SilentlyContinue
+          
+          if ([string]::IsNullOrEmpty($latestTag)) { 
+            $latestTag = "v0.0.0"
+            Write-Host "No tags found. Defaulting version to: v0.0.0"
+          }
+
           $versionClean = $latestTag.TrimStart("v")
+          
           echo "VERSION_CLEAN=$versionClean" >> $env:GITHUB_OUTPUT
+          Write-Host "Using Version: $versionClean"
         shell: powershell
 
       - name: Set up Python
