@@ -21,13 +21,15 @@ jobs:
       - name: Get Latest Tag Version
         id: get_version
         run: |
-          $latestTag = git describe --tags --abbrev=0 -ErrorAction SilentlyContinue
+          $latestTag = git describe --tags --abbrev=0 2>$null
           
           if ([string]::IsNullOrEmpty($latestTag)) { 
             $latestTag = "v0.0.0"
             Write-Host "No tags found. Defaulting version to: v0.0.0"
+          } else {
+            Write-Host "Found tag: $latestTag"
           }
-
+          
           $versionClean = $latestTag.TrimStart("v")
           
           echo "VERSION_CLEAN=$versionClean" >> $env:GITHUB_OUTPUT
