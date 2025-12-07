@@ -10,32 +10,44 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Clean Tag Name
-        id: clean_version
+      - name: Extract Version and SHA
+        id: version_info
         run: |
           VERSION_TAG=${{ github.ref_name }}
           VERSION_CLEAN=${VERSION_TAG:1} 
+          COMMIT_SHA=${{ github.sha }}
+          
           echo "VERSION_TAG=$VERSION_TAG" >> $GITHUB_OUTPUT
           echo "VERSION_CLEAN=$VERSION_CLEAN" >> $GITHUB_OUTPUT
+          echo "COMMIT_SHA=$COMMIT_SHA" >> $GITHUB_OUTPUT
         shell: bash
 
-      - name: Download Artifact from Latest Run
+      - name: Download Artifact from Latest Build
         uses: dawidd6/action-download-artifact@v3
         with:
-          name: freya-${{ steps.clean_version.outputs.VERSION_CLEAN }}
+          name: freya-${{ steps.version_info.outputs.COMMIT_SHA }}
           path: release_files 
           github_token: ${{ secrets.GITHUB_TOKEN }} 
-          workflow: build-exe.yaml 
+          workflow: build-exe.yml
+          commit: ${{ steps.version_info.outputs.COMMIT_SHA }} 
+
+      - name: Rename Executable for Release
+        run: |
+          VERSION=${{ steps.version_info.outputs.VERSION_CLEAN }}
+          COMMIT=${{ steps.version_info.outputs.COMMIT_SHA }}
+          
+          find release_files -name "freya-${COMMIT}.exe" -exec mv {} release_files/freya-${VERSION}.exe \;
+        shell: bash
 
       - name: Create Release and Upload Asset
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.clean_version.outputs.VERSION_TAG }}
-          name: Freya App Release ${{ steps.clean_version.outputs.VERSION_TAG }}
+          tag_name: ${{ steps.version_info.outputs.VERSION_TAG }}
+          name: Freya App Release ${{ steps.version_info.outputs.VERSION_TAG }}
           body: |
-            🎉 Official Release for Freya App - Version ${{ steps.clean_version.outputs.VERSION_CLEAN }}
+            🎉 Official Release for Freya App - Version ${{ steps.version_info.outputs.VERSION_CLEAN }}
             
-            This release contains the final standalone Windows executable: freya-${{ steps.clean_version.outputs.VERSION_CLEAN }}.exe
+            This release contains the final standalone Windows executable: freya-${{ steps.version_info.outputs.VERSION_CLEAN }}.exe
           files: release_files/*.exe
           draft: false
           prerelease: false
